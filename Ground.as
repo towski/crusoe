@@ -12,14 +12,14 @@ package{
   			flower.y = 32 * y;
   			flower.drawTile(110);
         //stage.addChild(currentSprite);
-        stage.addChild(flower)
+        //stage.addChild(flower)
       } else if (random < 8 && world.breakGround){
         flower = new SpriteSheet(sheet, 32, 32);
   			flower.x = 32 * x;
   			flower.y = 32 * y;
   			flower.drawTile(111);
         //stage.addChild(currentSprite);
-        stage.addChild(flower)
+        //stage.addChild(flower)
       }
     } 
   }

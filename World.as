@@ -13,9 +13,9 @@ package{
     
     public function setup(stage:Object) {
       var klass:Class;
-      for(var i:int=0; i < 40 ;i++){ 
+      for(var i:int=0; i < 100 ;i++){ 
         world.push(new Array());
-        for(var j:int = 0; j < 40; j++){ 
+        for(var j:int = 0; j < 100; j++){ 
           var random:int = Math.floor(Math.random() * 101);
           if(i == 0 && j == 0){ 
             klass = Ground; 
@@ -33,7 +33,9 @@ package{
       for(var i:int = 0; i < 25 ;i++){ 
         buffer.push(new Array());
         for(var j:int = 0; j < 25; j++){ 
-          var object:Object = new world[i][j](j, i, stage, this);
+          var y:int = i + stage.world_index_y;
+          var x:int = j + stage.world_index_x;
+          var object:Object = new world[y][x](j, i, stage, this);
           buffer[i][j] = object;
         }
       }
