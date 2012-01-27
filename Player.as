@@ -26,16 +26,20 @@ package{
       //sprite.graphics.beginFill(0xFFFF00);
       //sprite.graphics.drawRect(0, 0, 25, 25);
       //sprite.graphics.endFill();
-      sheet.bitmapData.colorTransform( new Rectangle(0, 0, 32, 32), new ColorTransform(0.1, 0.1, 0.1));
+      //sheet.bitmapData.colorTransform( new Rectangle(0, 0, 32, 32), new ColorTransform(0.1, 0.1, 0.1));
 			
+      drawSprite(stage);
+			//sheet.bitmapData.colorTransform( new Rectangle(0, 0, 32, 32), new ColorTransform(0.5, 0.5, 0.5));
+			sprite.drawTile(493);
+    }
+    
+    public function drawSprite(stage:Object){
       sprite = new SpriteSheet(sheet, 8, 8);
       sprite.scaleX = 4;
       sprite.scaleY = 4;
 			sprite.x = 32 * x;
 			sprite.y = 32 * y;
-			sheet.bitmapData.colorTransform( new Rectangle(0, 0, 32, 32), new ColorTransform(0.5, 0.5, 0.5));
-			sprite.drawTile(493);
-      stage.addChild(sprite);
+			stage.addChild(sprite);
     }
   }
 }

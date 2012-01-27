@@ -13,12 +13,32 @@ package{
     
     public function setup(stage:Object) {
       var klass:Class;
-      for(var i:int=0; i < 100 ;i++){ 
+      for(var y:int=0; y < 100 ;y++){ 
         world.push(new Array());
-        for(var j:int = 0; j < 100; j++){ 
+        for(var x:int = 0; x < 100; x++){ 
           var random:int = Math.floor(Math.random() * 101);
-          if(i == 0 && j == 0){ 
+          if(y == stage.world_index_y && x == stage.world_index_x){ 
             klass = Ground; 
+          } else if(x <= 4 || x >= 96 || y <=4 || y >= 96){
+            klass = SeaWater;
+          } else if(x <= 5 || x >= 95 || y <= 5 || y >= 95){
+            klass = Water;
+          } else if(x <= 7 || x >= 93 || y <= 7 || y >= 93){
+            if(x != 58){
+              klass = Sand
+            } else {
+              klass = Water
+            }
+          }else if(x == 61 && (y >= 75 && y < 80)) {
+            klass = Water;
+          } else if(x == 58 && (y >= 78 && y < 95)) {
+            klass = Water;
+          } else if(x >= 57 && x <= 63 && y >= 80 && y <= 83){ 
+            if((y == 60 && x == 55) || (y == 60 && x == 62) || (y == 63 && x == 55) || (y == 63 && x == 62)){
+              klass = Ground;
+            } else {
+              klass = Water;
+            }
           } else if(random < 8){
             klass = Tree;
           } else if(random < 30){
@@ -26,8 +46,8 @@ package{
           } else {
             klass = Ground;
           }
-          world[i].push(klass);
-          //object.place(stage, this);
+          world[y].push(klass);
+          //obxect.place(stage, this);
         }
       }
       for(var i:int = 0; i < 25 ;i++){ 
@@ -39,7 +59,7 @@ package{
           buffer[i][j] = object;
         }
       }
-      player = new Player(0, 0, stage);
+      player = new Player(7, 18, stage);
       //new Cow(Math.floor(Math.random() * 24), Math.floor(Math.random() * 24), stage, this);
     }
     
@@ -98,6 +118,8 @@ package{
       player.sprite.x = 32 * x;
       player.sprite.y = 32 * y;
       stage.moving = setMoving;
+      stage.addChild(player.sprite);
+			
     }
   }
 }

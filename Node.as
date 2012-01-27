@@ -22,12 +22,14 @@ package{
     public var G:int;
     public var H:int;
     public var walkable:Boolean;
+    public var takeable:Boolean;
     public var color:int;
     public var delay:int;
     public var world:World;
     public function Node(obj_x:int, obj_y:int, stage:Object, world:World, my_color:int){ 
       world = world;
       walkable = true;
+      takeable = true;
       x = obj_x;
       y = obj_y;
       delay = 500;
@@ -66,8 +68,10 @@ package{
     }
     
     public function take(stage:Object, world:World, closure:Function):void{
-      stage.energy -= 1;
-      setTimeout(closure, delay, this)
+      if(takeable){
+        stage.energy -= 1;
+        setTimeout(closure, delay, this)
+      }
     }
   }
 }

@@ -31,7 +31,7 @@ package
     public var klass:Class;
     public function GreenValley():void{
       world_index_x = 50;
-      world_index_y = 50;
+      world_index_y = 75;
       moving = false;
       mode = 0;
       world = new World(this);
@@ -236,8 +236,6 @@ package
           }
         }
         world.buffer.splice(24,1);
-        world.player.y += 1;
-        world.player.sprite.y += 32;
         world.buffer.unshift(new Array());
         for(var x:int = 0; x < 25; x++){
           world.buffer[0].push(new world.world[world_index_y][x + world_index_x](x, 0, this, world));
@@ -247,6 +245,8 @@ package
             world.buffer[y][x].update(x,y);
           }
         }
+        world.player.y += 1;
+        world.player.sprite.y += 32;
       } else if(keyPressed == 83 || keyPressed == 40){ //down
         world_index_y += 1;
         for(var x:int = 0; x < 25; x++){
@@ -257,8 +257,6 @@ package
           }
         }
         world.buffer.splice(0,1);
-        world.player.y -= 1;
-        world.player.sprite.y -= 32;
         world.buffer.push(new Array());
         for(var x:int = 0; x < 25; x++){
           world.buffer[24].push(new world.world[world_index_y][world_index_x + x](x, 24, this, world));
@@ -268,6 +266,8 @@ package
             world.buffer[y][x].update(x,y);
           }
         }
+        world.player.y -= 1;
+        world.player.sprite.y -= 32;
       } else if(keyPressed == 65){ //left
         world_index_x -= 1;
         for(var y:int = 0; y < 25; y++){
@@ -278,8 +278,6 @@ package
           }
           world.buffer[y].pop();
         }
-        world.player.x += 1;
-        world.player.sprite.x += 32;
         for(var y:int = 0; y < 25; y++){
           world.buffer[y].unshift(new world.world[world_index_y + y][world_index_x](0, y, this, world));
         }
@@ -288,6 +286,8 @@ package
             world.buffer[y][x].update(x,y);
           }
         }
+        world.player.x += 1;
+        world.player.sprite.x += 32;
       } else if(keyPressed == 68){ //right
         world_index_x += 1;
         for(var y:int = 0; y < 25; y++){
@@ -298,8 +298,6 @@ package
           }
           world.buffer[y].shift();
         }
-        world.player.x -= 1;
-        world.player.sprite.x -= 32;
         for(var y:int = 0; y < 25; y++){
           world.buffer[y].push(new world.world[world_index_y + y][world_index_x](24, y, this, world));
         }
@@ -308,6 +306,8 @@ package
             world.buffer[y][x].update(x,y);
           }
         }
+        world.player.x -= 1;
+        world.player.sprite.x -= 32;
       }
     }
   }
