@@ -1,18 +1,30 @@
 package{
+  import flash.utils.getQualifiedClassName
+  
   public class Ground extends Node{
     public var flower:SpriteSheet;
     
-    public function Ground(obj_x:int, obj_y:int, stage:Object, world:World) {
-      super(obj_x, obj_y, stage, world, 0xffffff);
-			sprite = groundSprite;
+    public function Ground(obj_x:int, obj_y:int, stage:Object, world:World, groundColor:int = 70) {
+      super(obj_x, obj_y, stage, world, groundColor);
+			//sprite = groundSprite;
+			var random:int = Math.floor(Math.random() * 101);
+      if(random < 8){
+        item = new Tree()
+        //sprite.drawTile(item.tile)
+        walkable = false;
+      } else if(random < 30){
+        item = new Bush()
+        //sprite.drawTile(item.tile)
+        walkable = false;
+      }
+      drawItem(stage)
+			
 			var random:int = Math.floor(Math.random() * 101);
       if(random < 4 && world.breakGround){
         flower = new SpriteSheet(sheet, 32, 32);
   			flower.x = 32 * x;
   			flower.y = 32 * y;
   			flower.drawTile(110);
-        //stage.addChild(currentSprite);
-        //stage.addChild(flower)
       } else if (random < 8 && world.breakGround){
         flower = new SpriteSheet(sheet, 32, 32);
   			flower.x = 32 * x;
@@ -21,6 +33,10 @@ package{
         //stage.addChild(currentSprite);
         //stage.addChild(flower)
       }
+    }
+    
+    override public function after_take(stage:Object, world:World):void{
+      super.after_take(stage, world)
     } 
   }
 }

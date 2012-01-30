@@ -1,13 +1,13 @@
 package{
-  import Node
-  public class Fence extends Node{
-    public function Fence(obj_x:int, obj_y:int, stage:Object, world:World) {
-      super(obj_x, obj_y, stage, world, 0xbc8f8f);
+  public class Fence extends Item{
+    public function Fence() {
+    }
+    
+    public function draw(x:int, y:int):void{
       sprite = new SpriteSheet(sheet, 32, 32);
 			sprite.x = 32 * x;
 			sprite.y = 32 * y;
-      sprite.drawTile(16);
-      walkable = false;
+      sprite.drawTile(143);
     }
 
     override public function requirements_met(stage:Object):Boolean{
@@ -18,15 +18,16 @@ package{
       }
     }
     
-    override public function place(stage:Object, world:World):void{
-      super.place(stage, world);
+    override public function place(stage:Object, x:int, y:int):void{
+      super.place(stage, x, y);
       stage.wood -= 1;
       stage.energy -= 1;
     }
     
-    override public function take(stage:Object, world:World, closure:Function):void{
-      super.take(stage, world, closure);
+    override public function take(stage:Object, world:World):Item{
+      super.take(stage, world);
       stage.wood += 1;
+      return this
     }
   }
 }

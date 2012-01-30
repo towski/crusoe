@@ -12,7 +12,7 @@ package
   [SWF(backgroundColor="#ffffff", frameRate="24", width="800", height="800")]
   public class GreenValley extends Sprite
   {   
-    private var world:World;
+    public var world:World;
     private var openList:Array;
     private var closedList:Array;
     private var currentNode:Object;
@@ -27,11 +27,18 @@ package
     public var energy_text : TextField;
     public var wood_text : TextField;
     public var food_text : TextField;
-    public var bed:Bed;
+    public var bed_x:int;
+    public var bed_y:int;
     public var klass:Class;
+    public var item:Item;
+    
+    [Embed(source='previewenv.png')]
+		public var sheetClass:Class;
+		public var sheet:Bitmap = new sheetClass();
+    
     public function GreenValley():void{
-      world_index_x = 50;
-      world_index_y = 75;
+      world_index_x = 148;
+      world_index_y = 94;
       moving = false;
       mode = 0;
       world = new World(this);
@@ -45,20 +52,21 @@ package
       energy_text.text = "energy:" + energy;
       energy_text.autoSize = TextFieldAutoSize.LEFT;
       energy_text.x = stage.stageWidth / 2 - energy_text.width / 2;
-      energy_text.y = 0
+      energy_text.y = 20 * 32
       addChild(energy_text);
       wood_text = new TextField();
       wood_text.text = "wood:" + wood;
       wood_text.autoSize = TextFieldAutoSize.LEFT;
       wood_text.x = stage.stageWidth / 2 - wood_text.width / 2 + 50;
-      wood_text.y = 0
+      wood_text.y = 20 * 32
       addChild(wood_text);
       food_text = new TextField();
       food_text.text = "food:" + food;
       food_text.autoSize = TextFieldAutoSize.LEFT;
       food_text.x = stage.stageWidth / 2 - food_text.width / 2 + 100;
-      food_text.y = 0
+      food_text.y = 20 * 32
       addChild(food_text);
+  
       //var pic:Bitmap = new Picture();
     }
     
@@ -113,6 +121,9 @@ package
           currentNode.parent = null;
           currentNode = parent;
         }
+        //if(currentNode.child){
+        //  recurse(currentNode.x, currentNode.y, graphics, true, this);
+        //}
         var index:int = 0;
         while(currentNode.child){
           setTimeout(world.movePerson, index * 500, currentNode.x, currentNode.y, graphics, true, this);
@@ -122,11 +133,24 @@ package
           currentNode = child;  
         }
         setTimeout(world.movePerson, index * 500, currentNode.x, currentNode.y, graphics, false, this)
-        if (closure){
+        if (closure != null){
           setTimeout(closure, index * 500 + 500, closureParam)
         }
       } else {
         moving = false;
+      }
+    }
+    
+    public function recurse(x:int, y:int, graphics:Object, setMoving:Boolean, stage:Object):void{
+      world.movePerson(currentNode.x, currentNode.y, graphics, true, this)
+      if(currentNode.child){
+        var child:Object = currentNode.child;
+        currentNode.child = null;
+        currentNode = child;
+        recurse(currentNode.x, currentNode.y, graphics, true, this)
+      } else {
+        world.movePerson(currentNode.x, currentNode.y, graphics, false, this)
+        //recurse(currentNode.x, currentNode.y, graphics, false, this)
       }
     }
 
@@ -148,37 +172,33 @@ package
       wood_text.text = "wood:" + wood;
     }
     
-    public function after_take(node:Object){
-      world.breakGround = false;
-      var ground:Ground = new Ground(node.x, node.y, this, world);
-      world.breakGround = true;
-      swapChildren(ground.groundSprite, world.buffer[node.y][node.x].sprite)
-      if(world.buffer[node.y][node.x].sprite){
-        removeChild(world.buffer[node.y][node.x].sprite);
-      }
-      removeChild(world.buffer[node.y][node.x].groundSprite);
-      world.buffer[node.y][node.x] = ground
+    public function after_take(node:Node){
+      node.after_take(this, world);
+      moving = false
       if(energy == 0){
         moving = true;
         openList = new Array();
         closedList = new Array();
-        path(world.buffer[world.player.y][world.player.x], world.buffer[bed.y][bed.x], replenishEnergy, null);
+        path(world.buffer[world.player.y][world.player.x], world.buffer[bed_y][bed_x], replenishEnergy, null);
       }
     }
     
     public function place(node:Object){
-       var object:Node = new klass(node.x, node.y, this, world);
-       if(object.requirements_met(this)){
-         object.place(this, world);
-         energy_text.text = "energy:" + energy;
-         wood_text.text = "wood:" + wood;
-       }
-       if(energy <= 0){
-         moving = true;
-         openList = new Array();
-         closedList = new Array();
-         path(world.buffer[world.player.y][world.player.x], world.buffer[bed.y][bed.x], replenishEnergy, null);
-       }
+      var object:Item = world.player.clearInventory();
+      //if(object.requirements_met(this)){
+      if(true){
+        node.addItem(object, this);
+        //object.place(this, world);
+        energy_text.text = "energy:" + energy;
+        wood_text.text = "wood:" + wood;
+      }
+      moving = false
+      if(energy <= 0){
+        moving = true;
+        openList = new Array();
+        closedList = new Array();
+        path(world.buffer[world.player.y][world.player.x], world.buffer[bed_y][bed_x], replenishEnergy, null);
+      }
     }
     
     public function myClick(eventObject:MouseEvent):void {
@@ -188,7 +208,7 @@ package
         var currentPosition:Object = world.buffer[world.player.y][world.player.x];
         openList = new Array();
         closedList = new Array();
-        if(world.buffer[y][x].walkable && mode == 0){
+        if(world.buffer[y][x].isWalkable() && !world.player.hasInventory()){
           moving = true;
           path(currentPosition, world.buffer[y][x], null, null);
         } else {
@@ -201,10 +221,10 @@ package
             }
           }
           if(target){
-            if((mode == 1 || mode == 2) && world.buffer[y][x].walkable){
+            if(world.player.hasInventory()){
               moving = true;
               path(currentPosition, target, place, world.buffer[y][x]);
-            } else if(mode == 0) {
+            } else if(!world.player.hasInventory()) {
               moving = true;
               path(currentPosition, target, take, world.buffer[y][x]);
             }
@@ -218,96 +238,43 @@ package
       keyPressed = keyEvent.keyCode;
       trace(keyPressed);
       if(keyPressed == 48){
+        world.player.clearInventory();
         mode = 0;
         klass = Ground;
+        item = new Fence();
+        Barrel
       } else if(keyPressed == 49){
-        mode = 1;
-        klass = Fence;
+        world.player.clearInventory();
+        world.player.addToInventory(new Log(), this);
       } else if(keyPressed == 50){
+        world.player.clearInventory();
+        world.player.addToInventory(new Bed(), this);
+      } else if(keyPressed == 51){
+        world.player.clearInventory();
+        world.player.addToInventory(new Barrel(), this);
+      } else if(keyPressed == 51){
+        for(var y:int = 0; y < 20; y++){
+          for(var x:int = 0; x < 20; x++){
+            trace(world.terrain[ world_index_y][ world_index_x])
+            trace(world.items[ world_index_y][ world_index_x])
+            world.buffer[y][x].sprite.drawTile(world.items[ world_index_y + y][ world_index_x + x])
+            world.buffer[y][x].groundSprite.drawTile(world.terrain[ world_index_y + y][ world_index_x + x])
+           
+
+            //buffer[y][x].sprite.drawTile(terrain[x][y])
+          }
+        }
+        //inventorySlot.drawTile(135);
         mode = 2;
         klass = Bed;
       } else if(keyPressed == 87){ //up
-        world_index_y -= 1;
-        for(var x:int = 0; x < 25; x++){
-          var object:Node = world.buffer[24][x];
-          removeChild(object.groundSprite);
-          if(object.sprite != object.groundSprite){
-            removeChild(object.sprite);
-          }
-        }
-        world.buffer.splice(24,1);
-        world.buffer.unshift(new Array());
-        for(var x:int = 0; x < 25; x++){
-          world.buffer[0].push(new world.world[world_index_y][x + world_index_x](x, 0, this, world));
-        }
-        for(var y:int = 0; y < 25; y++){
-          for(var x:int = 0; x < 25; x++){
-            world.buffer[y][x].update(x,y);
-          }
-        }
-        world.player.y += 1;
-        world.player.sprite.y += 32;
-      } else if(keyPressed == 83 || keyPressed == 40){ //down
-        world_index_y += 1;
-        for(var x:int = 0; x < 25; x++){
-          var object:Node = world.buffer[0][x];
-          removeChild(object.groundSprite);
-          if(object.sprite != object.groundSprite){
-            removeChild(object.sprite);
-          }
-        }
-        world.buffer.splice(0,1);
-        world.buffer.push(new Array());
-        for(var x:int = 0; x < 25; x++){
-          world.buffer[24].push(new world.world[world_index_y][world_index_x + x](x, 24, this, world));
-        }
-        for(var x:int = 0; x < 25; x++){
-          for(var y:int = 0; y < 25; y++){
-            world.buffer[y][x].update(x,y);
-          }
-        }
-        world.player.y -= 1;
-        world.player.sprite.y -= 32;
-      } else if(keyPressed == 65){ //left
-        world_index_x -= 1;
-        for(var y:int = 0; y < 25; y++){
-          var object:Node = world.buffer[y][24];
-          removeChild(object.groundSprite);
-          if(object.sprite != object.groundSprite){
-            removeChild(object.sprite);
-          }
-          world.buffer[y].pop();
-        }
-        for(var y:int = 0; y < 25; y++){
-          world.buffer[y].unshift(new world.world[world_index_y + y][world_index_x](0, y, this, world));
-        }
-        for(var x:int = 0; x < 25; x++){
-          for(var y:int = 0; y < 25; y++){
-            world.buffer[y][x].update(x,y);
-          }
-        }
-        world.player.x += 1;
-        world.player.sprite.x += 32;
+        world.moveCameraUp(this);
+       } else if(keyPressed == 83 || keyPressed == 40){ //down
+         world.moveCameraDown(this);
+       } else if(keyPressed == 65){ //left
+         world.moveCameraLeft(this);
       } else if(keyPressed == 68){ //right
-        world_index_x += 1;
-        for(var y:int = 0; y < 25; y++){
-          var object:Node = world.buffer[y][0];
-          removeChild(object.groundSprite);
-          if(object.sprite != object.groundSprite){
-            removeChild(object.sprite);
-          }
-          world.buffer[y].shift();
-        }
-        for(var y:int = 0; y < 25; y++){
-          world.buffer[y].push(new world.world[world_index_y + y][world_index_x](24, y, this, world));
-        }
-        for(var x:int = 0; x < 25; x++){
-          for(var y:int = 0; y < 25; y++){
-            world.buffer[y][x].update(x,y);
-          }
-        }
-        world.player.x -= 1;
-        world.player.sprite.x -= 32;
+        world.moveCameraRight(this);
       }
     }
   }
