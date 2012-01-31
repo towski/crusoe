@@ -2,6 +2,9 @@ package
 {
   import flash.display.Sprite;
   import flash.display.Bitmap;
+  import flash.display.BitmapData;  
+  import flash.display.BlendMode;  
+  
   import flash.events.*;
   import flash.display.StageQuality;
   import flash.utils.*;
@@ -20,6 +23,9 @@ package
     public var energy:int;
     public var wood:int;
     public var food:int;
+    public var day:int;
+    public var interval:int;
+    public var daytime:Boolean;
     public var world_index_y:int;
     public var world_index_x:int;
     public var moving:Boolean;
@@ -31,6 +37,8 @@ package
     public var bed_y:int;
     public var klass:Class;
     public var item:Item;
+    public var shadeVariablesFromBase:Array = [0.8, 1.0, 0.8, 0.4]
+    public var shadeVariables:Array = [1.25, 0.8, 0.5, 2];
     
     [Embed(source='previewenv.png')]
 		public var sheetClass:Class;
@@ -41,6 +49,8 @@ package
       world_index_y = 94;
       moving = false;
       mode = 0;
+      daytime = true
+      interval = 0;
       world = new World(this);
       world.setup(this);
       stage.addEventListener(MouseEvent.CLICK, myClick);
@@ -48,6 +58,7 @@ package
       energy = 50;
       food = 5;
       wood = 15;
+      day = 0
       energy_text = new TextField();
       energy_text.text = "energy:" + energy;
       energy_text.autoSize = TextFieldAutoSize.LEFT;
@@ -66,8 +77,29 @@ package
       food_text.x = stage.stageWidth / 2 - food_text.width / 2 + 100;
       food_text.y = 20 * 32
       addChild(food_text);
-  
+      //setInterval(darken, 20000);
+      
+      //var bitmapData:BitmapData = new BitmapData(800, 800, false, 0x88888888);
+      //var bitmap:Bitmap = new Bitmap(bitmapData)
+      //bitmap.blendMode = BlendMode.OVERLAY
+      //addChild(bitmap);
       //var pic:Bitmap = new Picture();
+    }
+    
+    public function darken():void{
+      world.darken(shade());
+      interval += 1;
+      if(interval % 4 == 0){
+        day += 1;
+      }
+    }
+    
+    public function shade():Number{
+      return shadeVariables[interval % 4]
+    }
+    
+    public function shadeFromBase():Number{
+      return shadeVariablesFromBase[interval % 4]
     }
     
     public function path(start:Object, end:Object, closure:Function, closureParam:Object):void{
@@ -175,12 +207,12 @@ package
     public function after_take(node:Node){
       node.after_take(this, world);
       moving = false
-      if(energy == 0){
-        moving = true;
-        openList = new Array();
-        closedList = new Array();
-        path(world.buffer[world.player.y][world.player.x], world.buffer[bed_y][bed_x], replenishEnergy, null);
-      }
+      //if(energy == 0){
+      //  moving = true;
+      //  openList = new Array();
+      //  closedList = new Array();
+      //  path(world.buffer[world.player.y][world.player.x], world.buffer[bed_y][bed_x], replenishEnergy, null);
+      //}
     }
     
     public function place(node:Object){
@@ -193,12 +225,12 @@ package
         wood_text.text = "wood:" + wood;
       }
       moving = false
-      if(energy <= 0){
-        moving = true;
-        openList = new Array();
-        closedList = new Array();
-        path(world.buffer[world.player.y][world.player.x], world.buffer[bed_y][bed_x], replenishEnergy, null);
-      }
+      //if(false){
+      //  moving = true;
+      //  openList = new Array();
+      //  closedList = new Array();
+      //  path(world.buffer[world.player.y][world.player.x], world.buffer[bed_y][bed_x], replenishEnergy, null);
+      //}
     }
     
     public function myClick(eventObject:MouseEvent):void {

@@ -7,17 +7,6 @@ package{
     public function Ground(obj_x:int, obj_y:int, stage:Object, world:World, groundColor:int = 70) {
       super(obj_x, obj_y, stage, world, groundColor);
 			//sprite = groundSprite;
-			var random:int = Math.floor(Math.random() * 101);
-      if(random < 8){
-        item = new Tree()
-        //sprite.drawTile(item.tile)
-        walkable = false;
-      } else if(random < 30){
-        item = new Bush()
-        //sprite.drawTile(item.tile)
-        walkable = false;
-      }
-      drawItem(stage)
 			
 			var random:int = Math.floor(Math.random() * 101);
       if(random < 4 && world.breakGround){

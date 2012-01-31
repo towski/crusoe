@@ -7,7 +7,12 @@ package{
     
     override public function take(stage:Object, world:World):Item{
       super.take(stage, world);
-      return null;
+      var random:int = Math.floor(Math.random() * 101);
+      if(random < 40){
+        return new Grapes();
+      } else {
+        return null;
+      }
     }
   }
 }

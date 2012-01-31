@@ -7,6 +7,7 @@ package{
       sprite = groundSprite;
 			var random:int = Math.floor(Math.random() * 101);
       groundSprite.drawTile(189);
+      darken(stage.shadeFromBase())
     } 
   }
 }

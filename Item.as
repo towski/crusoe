@@ -11,6 +11,7 @@ package{
   	public var itemSheet:Bitmap = new itemSheetClass();
     
     public var sprite:SpriteSheet;
+    public var spriteSheet:SpriteSheet;
     public var useItemSheet:Boolean;
     
     public var delay:int;

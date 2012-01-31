@@ -2,6 +2,9 @@ package{
   import flash.utils.*;
   import flash.display.Sprite;
   import flash.display.Bitmap;
+  import flash.display.BitmapData;
+  import flash.geom.Rectangle;
+  import flash.geom.ColorTransform;
   
   import flash.events.*;
   
@@ -42,7 +45,25 @@ package{
 			groundSprite.x = 32 * x;
 			groundSprite.y = 32 * y;
 			groundSprite.drawTile(groundTile);
+			//darken(stage.shadeFromBase())
 			stage.addChild(groundSprite);
+			var itemClass:Class = world.items[stage.world_index_y + obj_y][stage.world_index_x + obj_x]
+			if(itemClass != null){
+			  item = new itemClass()
+		  }
+			//drawItem(stage)
+			addItem(item, stage)
+    }
+    
+    public function darken(shade:Number):void {
+      groundSprite.canvasBitmapData.colorTransform(new Rectangle(0, 0, 32, 32), new ColorTransform(shade, shade, shade));
+	    darkenItem(shade);
+    }
+    
+    public function darkenItem(shade:Number):void {
+      if(sprite != null){
+	      sprite.canvasBitmapData.colorTransform( new Rectangle(0, 0, 32, 32), new ColorTransform(shade, shade, shade));
+      }
     }
     
     public function drawItem(stage:Object):void{
@@ -52,9 +73,14 @@ package{
 			    sprite.x = 32 * x;
 			    sprite.y = 32 * y;
 			    sprite.drawTile(item.tile);
+			    //darkenItem(stage.shadeFromBase())
 			    stage.addChild(sprite);
 		    }
-		  }
+		  } else {
+		    if(item != null){ 
+          sprite.drawTile(item.tile)
+        }
+      }
     }
     
     public function update(local_x:int, local_y:int):void{
@@ -73,12 +99,15 @@ package{
     }
     
     public function addItem(object:Item, stage:Object):void{
-      //stage.world.items[y + stage.world_index_y][x + stage.world_index_x] = object;
-      object.place(stage, x, y)
-      walkable = !walkable
-      item = object
-      drawItem(stage)
-      sprite.drawTile(item.tile)
+      //object.place(stage, x, y)
+      if(object != null){
+        stage.world.items[y + stage.world_index_y][x + stage.world_index_x] = flash.utils.getDefinitionByName(flash.utils.getQualifiedClassName(object));
+        walkable = !walkable
+        item = object
+        drawItem(stage)
+      } else {
+        stage.world.items[y + stage.world_index_y][x + stage.world_index_x] = null
+      }
     }
     
     public function place(stage:Object, world:World):void{
@@ -91,6 +120,7 @@ package{
     public function take(stage:Object, world:World, closure:Function):void{
       //stage.moving = true
       if(takeable){
+        stage.world.items[y + stage.world_index_y][x + stage.world_index_x] = null
         stage.energy -= 1;
         setTimeout(closure, delay, this)
       }

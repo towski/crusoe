@@ -64,15 +64,17 @@ package{
           } else {
             klass = Ground;
             var random:int = Math.floor(Math.random() * 101);
-            if(random < 8){
-              items[y][x] = new Tree()
-            } else if(random < 30){
-              items[y][x] = new Bush()
+            if(random < 16){
+              items[y][x] = Tree
+            } else if(random < 45){
+              items[y][x] = Bush
             }
           }
           world[y].push(klass);
         }
       }
+      
+      items[stage.world_index_y + 11][stage.world_index_x + 11] = Barrel
 
       for(var i:int = 0; i < 20 ;i++){ 
         buffer.push(new Array());
@@ -83,7 +85,6 @@ package{
           buffer[i][j] = object;
         }
       }
-        
       player = new Player(10, 10, stage);
     }
     
@@ -178,6 +179,14 @@ package{
       }
     }
     
+    public function darken(shade:Number):void{
+      for(var y:int = 0; y < 20; y++){
+        for(var x:int = 0; x < 20; x++){
+          buffer[y][x].darken(shade)
+        }
+      }
+    }
+    
     public function moveCameraDown(stage:Object, move:Boolean = true):void{
       stage.world_index_y += 1;
        for(var x:int = 0; x < 20; x++){
@@ -221,7 +230,7 @@ package{
         buffer[0].push(node)
         //item = items[stage.world_index_y][stage.world_index_x + x]
         //if (item != null){
-        //  node.addItem(item, this)
+        //  node.addItem(item, stage)
         //}
       }
       for(var y:int = 0; y < 20; y++){

@@ -11,6 +11,8 @@ package{
       } else {
   			groundSprite.drawTile(130);
       }
+      darken(stage.shadeFromBase())
+			
     } 
   }
 }

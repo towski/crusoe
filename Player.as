@@ -2,8 +2,6 @@ package{
   import flash.display.Sprite;
   import flash.display.Bitmap;
   import flash.display.BitmapData;
-  import flash.geom.Rectangle;
-  import flash.geom.ColorTransform;
   
   public class Player{ 
 		[Embed(source='char.png')]
