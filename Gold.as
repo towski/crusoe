@@ -1,8 +1,9 @@
 package{
   public class Gold extends Item{
-    public function Gold() {
+    public function Gold(related_node:Node) {
+      super(related_node, true)
       tile = 23;
-      useItemSheet = true;
+      itemSheet = new itemSheetClass()
     } 
     
     override public function place(stage:Object, x:int, y:int):void{

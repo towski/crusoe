@@ -7,6 +7,7 @@ package{
   public class World {
     public var world:Array;
     public var buffer:Array;
+    public var animals:Array;
     public var items:Array;
     public var terrain:Array;
     public var player:Object;
@@ -20,7 +21,7 @@ package{
       world = new Array()
       buffer = new Array();
       items = new Array()
-      terrain = new Array();
+      animals = new Array();
       follow = true;
       cumulative_x = 0;
       cumulative_y = 0;
@@ -35,16 +36,10 @@ package{
       for(var y:int=0; y < map.length; y++){ 
         world.push(new Array());
         items.push(new Array());
-        terrain.push(new Array());
         for(var x:int = 0; x < map[0].length; x++){
           char = map[y].charAt(x);
           if(char == 'u'){
             var random:int = Math.floor(Math.random() * 101);
-            if(random < 50){
-              terrain[y][x] = 114 
-            } else {
-              terrain[y][x] = 130 
-            }
             klass = Water;
           } else if (char == '.'){
             klass = Sand;
@@ -52,6 +47,8 @@ package{
             klass = Cliff;
           } else if (char == 'v'){
             klass = DarkCliff;
+          } else if (char == '_'){
+            klass = Mud;
           } else if (char == 'f'){
             var random:int = Math.floor(Math.random() * 101);
             if(random < 30){
@@ -63,10 +60,14 @@ package{
             }
           } else {
             klass = Ground;
-            var random:int = Math.floor(Math.random() * 101);
-            if(random < 16){
+            var random:int = Math.floor(Math.random() * 201);
+            if(random < 1){
+              items[y][x] = Mushroom
+            } else if(random < 3){
+              items[y][x] = Rock
+            } else if(random < 32){
               items[y][x] = Tree
-            } else if(random < 45){
+            } else if(random < 90){
               items[y][x] = Bush
             }
           }
@@ -74,8 +75,15 @@ package{
         }
       }
       
-      items[stage.world_index_y + 11][stage.world_index_x + 11] = Barrel
-
+      items[stage.world_index_y + 9][stage.world_index_x + 9] = Barrel
+      items[stage.world_index_y + 9][stage.world_index_x + 10] = Rum
+      items[stage.world_index_y + 8][stage.world_index_x + 9] = Sword
+      items[stage.world_index_y + 8][stage.world_index_x + 11] = Table
+      items[stage.world_index_y + 8][stage.world_index_x + 10] = Skull
+      items[stage.world_index_y + 4][stage.world_index_x + 4] = Goat
+      items[stage.world_index_y + 10][stage.world_index_x + 10] = null
+      
+      
       for(var i:int = 0; i < 20 ;i++){ 
         buffer.push(new Array());
         for(var j:int = 0; j < 20; j++){ 
@@ -85,59 +93,68 @@ package{
           buffer[i][j] = object;
         }
       }
+      animals.push(new Animal(Goat, stage.world_index_x + 4, stage.world_index_y + 4))
       player = new Player(10, 10, stage);
+      
+      setInterval(move, 2000, items, stage)
     }
     
-    public function oldsetup(stage:Object) {
-      var klass:Class;
-      for(var y:int=0; y < 100 ;y++){ 
-        world.push(new Array());
-        for(var x:int = 0; x < 100; x++){ 
-          var random:int = Math.floor(Math.random() * 101);
-          if(y == stage.world_index_y && x == stage.world_index_x){ 
-            klass = Ground; 
-          } else if(x <= 4 || x >= 96 || y <=4 || y >= 96){
-            klass = SeaWater;
-          } else if(x <= 5 || x >= 95 || y <= 5 || y >= 95){
-            klass = Water;
-          } else if(x <= 7 || x >= 93 || y <= 7 || y >= 93){
-            if(x != 58){
-              klass = Sand
-            } else {
-              klass = Water
-            }
-          }else if(x == 61 && (y >= 75 && y < 83)) {
-            klass = Water;
-          } else if(x == 58 && (y >= 83 && y < 95)) {
-            klass = Water;
-          } else if(x >= 58 && x <= 62 && y >= 83 && y <= 83){ 
-            if((y == 60 && x == 55) || (y == 60 && x == 62) || (y == 63 && x == 55) || (y == 63 && x == 62)){
-              klass = Ground;
-            } else {
-              klass = Water;
-            }
-          } else if(random < 8){
-            klass = Tree;
-          } else if(random < 30){
-            klass = Bush;
-          } else {
-            klass = Ground;
+    public function move(items:Array, stage:Object):void{
+      var animal:Animal = animals[0];
+      var results:Array = globalNeighbors(animal.x, animal.y, items)
+      var random:int = Math.floor(Math.random() * results.length);
+      var oldNode:Node
+      if(onMap(animal, stage)){
+        oldNode = buffer[animal.y - stage.world_index_y][animal.x - stage.world_index_x]
+      }
+      var newY:int = results[random][0][0]
+      var newX:int = results[random][0][1]
+      if(onMap(animal, stage)){
+        var node:Node = buffer[newY - stage.world_index_y][newX - stage.world_index_x]
+        if(node.walkable){
+          items[animal.y][animal.x] = null
+          animal.x = newX;
+          animal.y = newY;
+          items[animal.y][animal.x] = animal.animalClass
+          if(oldNode != null){
+            oldNode.removeItem(stage)
           }
-          world[y].push(klass);
-          //obxect.place(stage, this);
+          node.addItem(new animal.animalClass(node), stage)
         }
       }
-      for(var i:int = 0; i < 20 ;i++){ 
-        buffer.push(new Array());
-        for(var j:int = 0; j < 20; j++){ 
-          var y:int = i + stage.world_index_y;
-          var x:int = j + stage.world_index_x;
-          var object:Object = new world[y][x](j, i, stage, this);
-          buffer[i][j] = object;
-        }
+    }
+    
+    public function onMap(animal:Animal, stage:Object):Boolean{
+      return animal.x >= stage.world_index_x && animal.x <= (stage.world_index_x + 19) && animal.y >= stage.world_index_y && animal.y <= (stage.world_index_y + 19)
+    }
+    
+    public function globalNeighbors(x:int, y:int, items:Array):Array{
+      var results:Array = new Array();
+      if(items[y - 1][x - 1] == null){
+        results.push(new Array([y - 1, x - 1]))  
       }
-      player = new Player(7, 18, stage);
-      
+      if(items[y - 1][x] == null){
+        results.push(new Array([y - 1, x]))
+      }
+      if(items[y - 1][x + 1] == null){
+        results.push(new Array([y - 1, x + 1]))  
+      }
+      if(items[y][x - 1] == null){
+        results.push(new Array([y, x - 1]))
+      }
+      if(items[y][x + 1] == null){
+        results.push(new Array([y, x + 1])) 
+      }
+      if(items[y + 1][x - 1] == null){
+        results.push(new Array([y + 1, x - 1]))
+      }
+      if(items[y + 1][x] == null){
+        results.push(new Array([y + 1, x]))
+      }
+      if(items[y + 1][x + 1] == null){
+        results.push(new Array([y + 1, x + 1]))
+      }
+      return results;
     }
     
     public function neighbors(obj:Object):Array{
@@ -149,22 +166,22 @@ package{
         if(x > 0){
           results.push(buffer[y - 1][x - 1]);
         }
-        if(x < 18){
+        if(x < 19){
           results.push(buffer[y - 1][x + 1]);
         }
       }
       if(x > 0){
         results.push(buffer[y][x - 1]);
       }
-      if(x < 18){
+      if(x < 19){
         results.push(buffer[y][x + 1]);
       }
-      if(y < 18){
+      if(y < 19){
         results.push(buffer[y + 1][x]);
         if(x > 0){
           results.push(buffer[y + 1][x - 1]);
         }
-        if(x < 18){
+        if(x < 19){
           results.push(buffer[y + 1][x + 1]);
         } 
       }
@@ -258,8 +275,6 @@ package{
       
       for(var y:int = 11; y < 20; y++){
         for(var x:int = 0; x < 20; x++){
-          trace(y + ":" + x)
-          trace(terrain[stage.world_index_y + y][stage.world_index_x + x])
           buffer[y][x].groundSprite.drawTile(terrain[stage.world_index_y + y][stage.world_index_x + x])
           buffer[y][x].sprite.drawTile(items[stage.world_index_y + y][stage.world_index_x + x])
           //buffer[y][x].sprite.drawTile(items[stage.world_index_y + y][stage.world_index_x + x])

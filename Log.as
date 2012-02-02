@@ -1,7 +1,9 @@
 package{
   public class Log extends Item{
     
-    public function Log() {
+    public function Log(related_node:Node) {
+      super(related_node)
+      
       tile = 143
     }
     

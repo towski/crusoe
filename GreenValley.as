@@ -29,7 +29,7 @@ package
     public var world_index_y:int;
     public var world_index_x:int;
     public var moving:Boolean;
-    public var mode:int;
+    public var mode:String;
     public var energy_text : TextField;
     public var wood_text : TextField;
     public var food_text : TextField;
@@ -37,8 +37,8 @@ package
     public var bed_y:int;
     public var klass:Class;
     public var item:Item;
-    public var shadeVariablesFromBase:Array = [0.8, 1.0, 0.8, 0.4]
-    public var shadeVariables:Array = [1.25, 0.8, 0.5, 2];
+    public var shadeVariablesFromBase:Array = [0.800, 1.000, 0.800, 0.400]
+    public var shadeVariables:Array = [1.2500, 0.800, 0.500, 2.000];
     
     [Embed(source='previewenv.png')]
 		public var sheetClass:Class;
@@ -48,7 +48,7 @@ package
       world_index_x = 148;
       world_index_y = 94;
       moving = false;
-      mode = 0;
+      mode = 'take';
       daytime = true
       interval = 0;
       world = new World(this);
@@ -77,7 +77,7 @@ package
       food_text.x = stage.stageWidth / 2 - food_text.width / 2 + 100;
       food_text.y = 20 * 32
       addChild(food_text);
-      //setInterval(darken, 20000);
+      setInterval(darken, 20000);
       
       //var bitmapData:BitmapData = new BitmapData(800, 800, false, 0x88888888);
       //var bitmap:Bitmap = new Bitmap(bitmapData)
@@ -108,7 +108,6 @@ package
       openList.push(start);
       while(openList.length != 0){
         currentNode = openList.shift();
-        trace(currentNode.G);
         if(currentNode === end){
           break;
         }
@@ -204,6 +203,10 @@ package
       wood_text.text = "wood:" + wood;
     }
     
+    public function useItem(node:Object):void{
+      world.buffer[node.y][node.x].useItem(this, world);
+    }
+    
     public function after_take(node:Node){
       node.after_take(this, world);
       moving = false
@@ -216,14 +219,11 @@ package
     }
     
     public function place(node:Object){
-      var object:Item = world.player.clearInventory();
+      world.player.place(node, this);
       //if(object.requirements_met(this)){
-      if(true){
-        node.addItem(object, this);
-        //object.place(this, world);
-        energy_text.text = "energy:" + energy;
-        wood_text.text = "wood:" + wood;
-      }
+      //object.place(this, world);
+      energy_text.text = "energy:" + energy;
+      wood_text.text = "wood:" + wood;
       moving = false
       //if(false){
       //  moving = true;
@@ -255,10 +255,18 @@ package
           if(target){
             if(world.player.hasInventory()){
               moving = true;
-              path(currentPosition, target, place, world.buffer[y][x]);
+              if(mode == "take"){
+                path(currentPosition, target, place, world.buffer[y][x]);
+              } else {
+                path(currentPosition, target, null, world.buffer[y][x]);
+              }
             } else if(!world.player.hasInventory()) {
               moving = true;
-              path(currentPosition, target, take, world.buffer[y][x]);
+              if(mode == "take"){
+                path(currentPosition, target, take, world.buffer[y][x]);
+              } else {
+                path(currentPosition, target, useItem, world.buffer[y][x]);
+              }
             }
           }
         }
@@ -269,26 +277,24 @@ package
       var keyPressed:int;
       keyPressed = keyEvent.keyCode;
       trace(keyPressed);
-      if(keyPressed == 48){
-        world.player.clearInventory();
-        mode = 0;
-        klass = Ground;
-        item = new Fence();
-        Barrel
-      } else if(keyPressed == 49){
-        world.player.clearInventory();
-        world.player.addToInventory(new Log(), this);
+      if(keyPressed == 49){
+        mode = 'take';
       } else if(keyPressed == 50){
-        world.player.clearInventory();
-        world.player.addToInventory(new Bed(), this);
+        mode = 'use';
       } else if(keyPressed == 51){
         world.player.clearInventory();
-        world.player.addToInventory(new Barrel(), this);
+        world.player.addToInventory(new Log(null), this);
+      } else if(keyPressed == 32){
+        //var item:Item = world.player.clearInventory();
+        world.player.useItem(this);
+      } else if(keyPressed == 52){
+        world.player.useItem(this);
+      } else if(keyPressed == 53){
+        world.player.clearInventory();
+        world.player.addToInventory(new Barrel(null), this);
       } else if(keyPressed == 51){
         for(var y:int = 0; y < 20; y++){
           for(var x:int = 0; x < 20; x++){
-            trace(world.terrain[ world_index_y][ world_index_x])
-            trace(world.items[ world_index_y][ world_index_x])
             world.buffer[y][x].sprite.drawTile(world.items[ world_index_y + y][ world_index_x + x])
             world.buffer[y][x].groundSprite.drawTile(world.terrain[ world_index_y + y][ world_index_x + x])
            
@@ -297,7 +303,6 @@ package
           }
         }
         //inventorySlot.drawTile(135);
-        mode = 2;
         klass = Bed;
       } else if(keyPressed == 87){ //up
         world.moveCameraUp(this);

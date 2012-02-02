@@ -4,11 +4,17 @@ package{
   public class Item{
     [Embed(source='previewenv.png')]
   	public var sheetClass:Class;
-  	public var sheet:Bitmap = new sheetClass();
     
     [Embed(source='items.png')]
   	public var itemSheetClass:Class;
-  	public var itemSheet:Bitmap = new itemSheetClass();
+  	
+  	[Embed(source='pirates.png')]
+  	public var piratesSheetClass:Class;
+  	
+  	[Embed(source='char.png')]
+  	public var charSheetClass:Class;
+  	
+  	public var itemSheet:Bitmap;
     
     public var sprite:SpriteSheet;
     public var spriteSheet:SpriteSheet;
@@ -16,17 +22,32 @@ package{
     
     public var delay:int;
     public var tile:int;
-    public function Item() {
-      useItemSheet = false;
+    public var emptyTile:int;
+    public var useable:Boolean;
+    public var takeable:Boolean;
+    public var node:Node;
+    public var bits:int;
+    
+    public var scaleX:int;
+    public var scaleY:int;
+    
+    public function Item(related_node:Node, customSheet:Boolean = false) {
+      node = related_node
+      if(!customSheet){
+        itemSheet = new sheetClass()
+      }
+      emptyTile = 14;
       tile = 14
+      bits = 32
+      useable = false
+      takeable = false
+      
+		  scaleX = 1
+		  scaleY = 1
     }
     
     public function getSprite():SpriteSheet{
-      if(useItemSheet){
-        return new SpriteSheet(itemSheet, 32, 32);
-      } else {
-        return new SpriteSheet(sheet, 32, 32);
-      }
+      return new SpriteSheet(itemSheet, bits, bits);
     }
 
     public function requirements_met(stage:Object):Boolean{
@@ -38,7 +59,10 @@ package{
     }
     
     public function take(stage:Object, world:World):Item{
-      return new Item();
+      return null;
+    }
+    
+    public function useItem(stage:Object):void{
     }
   }
 }

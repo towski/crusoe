@@ -1,13 +1,15 @@
 package{
   public class Barrel extends Item{
-    public function Barrel() {
+    public function Barrel(related_node:Node) {
+      super(related_node, true)
       tile = 0;
-      useItemSheet = true;
+      itemSheet = new itemSheetClass()
     } 
     
-    override public function place(stage:Object, x:int, y:int):void{
-      super.place(stage, x, y);
-      //stage.bed = this;
+    override public function take(stage:Object, world:World):Item{
+      super.take(stage, world);
+      world.player.addToInventory(this, stage)
+      return null
     }
   }
 }

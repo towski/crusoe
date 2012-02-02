@@ -2,6 +2,7 @@ package{
   import flash.display.Sprite;
   import flash.display.Bitmap;
   import flash.display.BitmapData;
+  import flash.utils.getQualifiedClassName
   
   public class Player{ 
 		[Embed(source='char.png')]
@@ -9,9 +10,6 @@ package{
 		private var sheet:Bitmap = new sheetClass();
 		public var sprite:SpriteSheet;
 		
-    [Embed(source='previewenv.png')]
-		public var environmentSheetClass:Class;
-		public var environmentSheet:Bitmap = new environmentSheetClass();
 		public var inventorySlot:SpriteSheet;
 		
     public var x:int;
@@ -33,6 +31,35 @@ package{
       stage.addChild(inventorySlot)
     }
     
+    public function useItem(stage:Object):void{
+      if(inventory != null && inventory.useable){
+        inventory.useItem(stage)
+        clearInventory()
+      }
+    }
+    
+    public function place(node:Node, stage:Object):void{
+      if(node.item == null){
+        node.addItem(inventory, stage);
+        clearInventory()
+      } else {
+        if (flash.utils.getQualifiedClassName(node.item) == "Barrel"){
+          if (flash.utils.getQualifiedClassName(inventory) == "Grapes" || flash.utils.getQualifiedClassName(inventory) == "Mushroom"){
+            stage.food += 1
+            clearInventory()
+            stage.food_text.text = "food:" + stage.food;
+          }
+        }
+        if (flash.utils.getQualifiedClassName(node.item) == "Table"){
+          if (flash.utils.getQualifiedClassName(inventory) == "Log"){
+            stage.wood += 1
+            clearInventory()
+            stage.wood_text.text = "wood:" + stage.wood;
+          }
+        }
+      }
+    }
+    
     public function addToInventory(object:Item, stage:Object):void{
       inventory = object;
       drawInventory(stage)
@@ -43,7 +70,7 @@ package{
       var item:Item = inventory;
       inventory = null;
       if(inventorySlot != null){
-        inventorySlot.drawTile(14);
+        inventorySlot.drawTile(item.emptyTile);
       }
       return item;
     }

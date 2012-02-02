@@ -1,6 +1,6 @@
 package{
   public class Fence extends Item{
-    public function Fence() {
+    public function Fence(related_node:Node) {
     }
     
     public function draw(x:int, y:int):void{

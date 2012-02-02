@@ -1,6 +1,4 @@
-package{
-  import flash.utils.getQualifiedClassName
-  
+package{  
   public class Ground extends Node{
     public var flower:SpriteSheet;
     

@@ -1,7 +1,8 @@
 package{
   public class Tree extends Item{
     
-    public function Tree() {
+    public function Tree(related_node:Node) {
+      super(related_node)
       tile = 73
       delay = 10000
     }
@@ -11,7 +12,7 @@ package{
       stage.moving = false;
       stage.energy -= 4;
       stage.wood += 5;
-      return new Log()
+      return new Log(node)
     }
   }
 }
