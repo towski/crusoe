@@ -8,6 +8,7 @@ package{
     
     override public function take(stage:Object, world:World):Item{
       super.take(stage, world);
+      stage.updateEnergy(-2);
       var random:int = Math.floor(Math.random() * 101);
       if(random < 40){
         return new Grapes(node);

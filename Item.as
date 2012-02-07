@@ -55,7 +55,7 @@ package{
     }
     
     public function place(stage:Object, x:int, y:int):void{
-      stage.energy -= 1;
+      stage.updateEnergy(-1);
     }
     
     public function take(stage:Object, world:World):Item{

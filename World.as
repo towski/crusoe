@@ -16,6 +16,7 @@ package{
     public var map:Array;
     public var cumulative_x:int;
     public var cumulative_y:int;
+    public var interval:Number;
     public function World(stage:Object) {
       breakGround = true;
       world = new Array()
@@ -50,13 +51,16 @@ package{
           } else if (char == '_'){
             klass = Mud;
           } else if (char == 'f'){
-            var random:int = Math.floor(Math.random() * 101);
-            if(random < 30){
-              klass = ForestTree;
-            } else if(random < 50){
-              klass = ForestBush;
-            } else {
-              klass = ForestGround;
+            klass = ForestGround;
+            var random:int = Math.floor(Math.random() * 201);
+            if(random < 1){
+              items[y][x] = Mushroom
+            } else if(random < 3){
+              items[y][x] = Rock
+            } else if(random < 32){
+              items[y][x] = Tree
+            } else if(random < 90){
+              items[y][x] = Bush
             }
           } else {
             klass = Ground;
@@ -94,38 +98,57 @@ package{
         }
       }
       animals.push(new Animal(Goat, stage.world_index_x + 4, stage.world_index_y + 4))
+      //animals.push(new Animal(Goat, stage.world_index_x - 10, stage.world_index_y - 4))
+      //animals.push(new Animal(Goat, stage.world_index_x - 20, stage.world_index_y + 5))
+      //animals.push(new Animal(Goat, stage.world_index_x + 6, stage.world_index_y + 6))
+      
       player = new Player(10, 10, stage);
       
-      setInterval(move, 2000, items, stage)
+      interval = setInterval(move, 1000, items, stage)
     }
     
     public function move(items:Array, stage:Object):void{
-      var animal:Animal = animals[0];
-      var results:Array = globalNeighbors(animal.x, animal.y, items)
-      var random:int = Math.floor(Math.random() * results.length);
-      var oldNode:Node
-      if(onMap(animal, stage)){
-        oldNode = buffer[animal.y - stage.world_index_y][animal.x - stage.world_index_x]
-      }
-      var newY:int = results[random][0][0]
-      var newX:int = results[random][0][1]
-      if(onMap(animal, stage)){
-        var node:Node = buffer[newY - stage.world_index_y][newX - stage.world_index_x]
-        if(node.walkable){
-          items[animal.y][animal.x] = null
-          animal.x = newX;
-          animal.y = newY;
-          items[animal.y][animal.x] = animal.animalClass
-          if(oldNode != null){
-            oldNode.removeItem(stage)
+      for(var i:int = 0; i < animals.length; i++){
+        var animal:Animal = animals[i];
+        var random:int = Math.floor(Math.random() * 3);
+        if(random < 1){
+          var results:Array = globalNeighbors(animal.x, animal.y, items)
+          random = Math.floor(Math.random() * results.length);
+          var oldNode:Node
+          if(onMap(animal.x, animal.y, stage)){
+            oldNode = buffer[animal.y - stage.world_index_y][animal.x - stage.world_index_x]
           }
-          node.addItem(new animal.animalClass(node), stage)
+          var newY:int = results[random][0][0]
+          var newX:int = results[random][0][1]
+          if(onMap(newX, newY, stage)){
+            var node:Node = buffer[newY - stage.world_index_y][newX - stage.world_index_x]
+            if(node.walkable && (player.x + stage.world_index_x) != newX && (player.y + stage.world_index_y) != newY){
+              items[animal.y][animal.x] = null
+              animal.x = newX;
+              animal.y = newY;
+              items[animal.y][animal.x] = animal.animalClass
+              if(oldNode != null){
+                oldNode.removeItem(stage)
+              }
+              node.addItem(new animal.animalClass(node), stage)
+            }
+          } else {
+            if(items[newY][newX] == null){
+              items[animal.y][animal.x] = null
+              animal.x = newX;
+              animal.y = newY;
+              items[newY][newX] = animal.animalClass
+              if(oldNode != null){
+                oldNode.removeItem(stage)
+              }
+            } 
+          }
         }
       }
     }
     
-    public function onMap(animal:Animal, stage:Object):Boolean{
-      return animal.x >= stage.world_index_x && animal.x <= (stage.world_index_x + 19) && animal.y >= stage.world_index_y && animal.y <= (stage.world_index_y + 19)
+    public function onMap(x:int, y:int, stage:Object):Boolean{
+      return x >= stage.world_index_x && x <= (stage.world_index_x + 19) && y >= stage.world_index_y && y <= (stage.world_index_y + 19)
     }
     
     public function globalNeighbors(x:int, y:int, items:Array):Array{
@@ -186,6 +209,22 @@ package{
         } 
       }
       return results;
+    }
+    
+    public function closestNeighbor(obj:Object):Node{
+      var results:Array = new Array();
+      results = neighbors(obj)
+      var shortestDistance:int = 10000;
+      var distance:int;
+      var target:Node;
+      for(var i:int = 0; i < results.length; i++){
+        distance = Math.sqrt((Math.pow(results[i].y - player.y, 2) + Math.pow(results[i].x - player.x, 2)))
+        if(results[i].isWalkable() && distance < shortestDistance){
+          shortestDistance = distance
+          target = results[i];
+        }
+      }
+      return target;
     }
     
     public function finishMoving(stage):void{

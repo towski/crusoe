@@ -1,9 +1,10 @@
 package{
-  public class Grapes extends Item{
+  public class Meat extends Item{
     
-    public function Grapes(related_node:Node) {
+    public function Meat(related_node:Node) {
       super(related_node)
-      tile = 127
+      tile = 17
+      itemSheet = new piratesSheetClass()
       useable = true
     }
     

@@ -22,8 +22,8 @@ package{
       }
     }
     
-    override public function after_take(stage:Object, world:World):void{
-      super.after_take(stage, world)
+    override public function afterTake(stage:Object, world:World):void{
+      super.afterTake(stage, world)
     } 
   }
 }

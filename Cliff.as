@@ -6,8 +6,6 @@ package{
       walkable = false;
       sprite = groundSprite;
   		groundSprite.drawTile(96);
-      //var random:int = Math.floor(Math.random() * 101);
-      //if(random < 10){
       //  sprite = new SpriteSheet(sheet, 32, 32);
   		//	sprite.x = 32 * x;
   		//	sprite.y = 32 * y;

@@ -86,14 +86,14 @@ package{
             sprite.drawTile(item.tile)
           } else {
             //stage.removeChild(sprite)
-            //sprite = item.getSprite();
-  			    //sprite.x = 32 * x;
-  			    //sprite.y = 32 * y;
-  			    //sprite.scaleX = item.scaleX;
-            //sprite.scaleY = item.scaleY;
-  			    //sprite.drawTile(item.tile);
-  			    //darkenItem(stage.shadeFromBase())
-  			    //stage.addChild(sprite);
+            sprite = item.getSprite();
+  			    sprite.x = 32 * x;
+  			    sprite.y = 32 * y;
+  			    sprite.scaleX = item.scaleX;
+            sprite.scaleY = item.scaleY;
+  			    sprite.drawTile(item.tile);
+  			    darkenItem(stage.shadeFromBase())
+  			    stage.addChild(sprite);
           }
         }
       }
@@ -133,14 +133,6 @@ package{
       world.buffer[y][x] = this;
     }
     
-    public function take(stage:Object, world:World, closure:Function):void{
-      if(takeable){
-        stage.world.items[y + stage.world_index_y][x + stage.world_index_x] = null
-        stage.energy -= 1;
-        setTimeout(closure, delay, this)
-      }
-    }
-    
     public function useItem(stage:Object, world:World):void{
       if(item != null && item.useable){
         stage.world.items[y + stage.world_index_y][x + stage.world_index_x] = null
@@ -164,15 +156,16 @@ package{
       return walkable == true && item == null
     }
     
-    public function after_take(stage:Object, world:World):void{
+    public function afterTake(stage:Object, world:World):void{
       var emptyTile:int = item.emptyTile;
       item = item.take(stage, world)
+      drawItem(stage)
       if(item != null){
         walkable = false;
-        sprite.drawTile(item.tile)
+        //sprite.drawTile(item.tile)
       } else {
         walkable = true
-        sprite.drawTile(emptyTile)
+        //sprite.drawTile(emptyTile)
       }
     }
     

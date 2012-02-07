@@ -21,12 +21,11 @@ package{
     override public function place(stage:Object, x:int, y:int):void{
       super.place(stage, x, y);
       stage.wood -= 1;
-      stage.energy -= 1;
+      stage.updateEnergy(-1);
     }
     
     override public function take(stage:Object, world:World):Item{
       super.take(stage, world);
-      stage.wood += 1;
       return this
     }
   }

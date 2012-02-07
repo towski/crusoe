@@ -12,7 +12,7 @@ package
   import flash.text.TextFormat;
   import flash.text.TextFieldAutoSize;
 
-  [SWF(backgroundColor="#ffffff", frameRate="24", width="800", height="800")]
+  [SWF(backgroundColor="#ffffff", frameRate="24", width="640", height="800")]
   public class GreenValley extends Sprite
   {   
     public var world:World;
@@ -21,6 +21,7 @@ package
     private var currentNode:Object;
     private var movieClip:Sprite;
     public var energy:int;
+    public var maxEnergy:int;
     public var wood:int;
     public var food:int;
     public var day:int;
@@ -31,22 +32,41 @@ package
     public var moving:Boolean;
     public var mode:String;
     public var energy_text : TextField;
+    public var gameOverText : TextField;
     public var wood_text : TextField;
     public var food_text : TextField;
     public var bed_x:int;
     public var bed_y:int;
     public var klass:Class;
+    public var gameOver:Boolean;
     public var item:Item;
+    public var darkenInterval:Number;
     public var shadeVariablesFromBase:Array = [0.800, 1.000, 0.800, 0.400]
     public var shadeVariables:Array = [1.2500, 0.800, 0.500, 2.000];
+    
+    [Embed(source="FFFHARMO.TTF", fontFamily="Harmony")]
+    private var _arial_str:String;
+
+    private var _arial_fmt:TextFormat;
+    private var _text_txt:TextField;
     
     [Embed(source='previewenv.png')]
 		public var sheetClass:Class;
 		public var sheet:Bitmap = new sheetClass();
     
     public function GreenValley():void{
-      world_index_x = 148;
-      world_index_y = 94;
+      start()
+      //var bitmapData:BitmapData = new BitmapData(800, 800, false, 0x88888888);
+      //var bitmap:Bitmap = new Bitmap(bitmapData)
+      //bitmap.blendMode = BlendMode.OVERLAY
+      //addChild(bitmap);
+      //var pic:Bitmap = new Picture();
+    }
+    
+    public function start():void{
+      gameOver = false;
+      world_index_x = 145;
+      world_index_y = 104;
       moving = false;
       mode = 'take';
       daytime = true
@@ -55,9 +75,10 @@ package
       world.setup(this);
       stage.addEventListener(MouseEvent.CLICK, myClick);
       stage.addEventListener(KeyboardEvent.KEY_DOWN, keypress);
-      energy = 50;
-      food = 5;
-      wood = 15;
+      energy = 100;
+      maxEnergy = 100;
+      food = 0;
+      wood = 0;
       day = 0
       energy_text = new TextField();
       energy_text.text = "energy:" + energy;
@@ -77,17 +98,46 @@ package
       food_text.x = stage.stageWidth / 2 - food_text.width / 2 + 100;
       food_text.y = 20 * 32
       addChild(food_text);
-      setInterval(darken, 20000);
+      darkenInterval = setInterval(darken, 20000);
       
-      //var bitmapData:BitmapData = new BitmapData(800, 800, false, 0x88888888);
-      //var bitmap:Bitmap = new Bitmap(bitmapData)
-      //bitmap.blendMode = BlendMode.OVERLAY
-      //addChild(bitmap);
-      //var pic:Bitmap = new Picture();
+      _arial_fmt = new TextFormat();
+      _arial_fmt.font = "Harmony";
+      _arial_fmt.size = 40;
+      
+      _text_txt = new TextField();
+      _text_txt.embedFonts = true;
+      _text_txt.autoSize = TextFieldAutoSize.LEFT;
+      _text_txt.defaultTextFormat = _arial_fmt;
+      _text_txt.text = "Begin Act 1";
+      _text_txt.x = (stage.stageWidth  / 2 - _text_txt.width / 2);
+      _text_txt.y = (stage.stageHeight / 2 - _text_txt.height / 2);
+      _text_txt.textColor = 0xffffffff;
+      _text_txt.embedFonts = true
+      _text_txt.alpha = 2.0
+      addChild(_text_txt);
+      setInterval(hideIntroText, 100)
+    }
+    
+    public function hideIntroText():void{
+      _text_txt.alpha -= 0.05
+    }
+    
+    public function updateEnergy(energyAddition:int):void{
+      if(energy + energyAddition < maxEnergy){
+        energy += energyAddition;
+      } else {
+        energy = maxEnergy
+      }
+      energy_text.text = "energy:" + energy;
+      if(energy <= 0){
+        endGame()
+      }
     }
     
     public function darken():void{
       world.darken(shade());
+      world.player.darken(shade());
+      updateEnergy(-5)
       interval += 1;
       if(interval % 4 == 0){
         day += 1;
@@ -190,32 +240,44 @@ package
     }
     
     public function replenishEnergy(node:Object):void{
-      energy = 50;
+      updateEnergy(50);
       food -= 1;
       energy_text.text = "energy:" + energy;
       food_text.text = "food:" + food;
     }
     
     public function take(node:Object):void{
-      energy -= 1;
-      world.buffer[node.y][node.x].take(this, world, after_take);
-      energy_text.text = "energy:" + energy;
-      wood_text.text = "wood:" + wood;
+      if(node.takeable){
+        //stage.world.items[y + stage.world_index_y][x + stage.world_index_x] = null
+        setTimeout(afterTake, node.delay, node)
+      }
     }
     
-    public function useItem(node:Object):void{
-      world.buffer[node.y][node.x].useItem(this, world);
-    }
-    
-    public function after_take(node:Node){
-      node.after_take(this, world);
+    public function afterTake(node:Node){
+      world.player.take(node, this);
       moving = false
-      //if(energy == 0){
       //  moving = true;
       //  openList = new Array();
       //  closedList = new Array();
       //  path(world.buffer[world.player.y][world.player.x], world.buffer[bed_y][bed_x], replenishEnergy, null);
       //}
+    }
+    
+    public function useItem(node:Object):void{
+      world.player.useItem(node, this)
+    }
+    
+    public function endGame():void{
+      gameOver = true;
+      while (numChildren) removeChildAt(0);
+      gameOverText = new TextField();
+      gameOverText.text = "Game over"
+      gameOverText.autoSize = TextFieldAutoSize.LEFT;
+      gameOverText.x = stage.stageWidth / 2 
+      gameOverText.y = stage.stageHeight / 2
+      clearInterval(world.interval)
+      clearInterval(darkenInterval);
+      addChild(gameOverText);
     }
     
     public function place(node:Object){
@@ -244,21 +306,14 @@ package
           moving = true;
           path(currentPosition, world.buffer[y][x], null, null);
         } else {
-          var targetNeighbors:Array = world.neighbors(world.buffer[y][x]);
-          var target:Object;
-          for(var i:int = 0; i < targetNeighbors.length; i++){
-            if(targetNeighbors[i].walkable){
-              target = targetNeighbors[i];
-              break;
-            }
-          }
+          var target:Object = world.closestNeighbor(world.buffer[y][x]);
           if(target){
             if(world.player.hasInventory()){
               moving = true;
               if(mode == "take"){
                 path(currentPosition, target, place, world.buffer[y][x]);
               } else {
-                path(currentPosition, target, null, world.buffer[y][x]);
+                path(currentPosition, target, useItem, world.buffer[y][x]);
               }
             } else if(!world.player.hasInventory()) {
               moving = true;
@@ -278,17 +333,27 @@ package
       keyPressed = keyEvent.keyCode;
       trace(keyPressed);
       if(keyPressed == 49){
-        mode = 'take';
+        
+          mode = 'take';
+          trace("take")
       } else if(keyPressed == 50){
-        mode = 'use';
+                mode = 'use';
+                trace("use")
       } else if(keyPressed == 51){
-        world.player.clearInventory();
-        world.player.addToInventory(new Log(null), this);
+        mode = 'use';
+        //world.player.clearInventory();
+        //world.player.addToInventory(new Log(null), this);
       } else if(keyPressed == 32){
         //var item:Item = world.player.clearInventory();
-        world.player.useItem(this);
+        if(gameOver){
+          start()
+        }
+        world.player.useItem(null, this);
+        energy_text.text = "energy:" + energy;
       } else if(keyPressed == 52){
-        world.player.useItem(this);
+        if(!gameOver){
+          endGame()
+        }
       } else if(keyPressed == 53){
         world.player.clearInventory();
         world.player.addToInventory(new Barrel(null), this);

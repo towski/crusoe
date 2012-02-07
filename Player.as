@@ -3,6 +3,8 @@ package{
   import flash.display.Bitmap;
   import flash.display.BitmapData;
   import flash.utils.getQualifiedClassName
+  import flash.geom.ColorTransform;
+  import flash.geom.Rectangle;
   
   public class Player{ 
 		[Embed(source='char.png')]
@@ -23,6 +25,10 @@ package{
       drawSprite(stage);
     }
     
+    public function darken(shade:Number):void {
+      sprite.canvasBitmapData.colorTransform(new Rectangle(0, 0, 32, 32), new ColorTransform(shade, shade, shade));
+    }
+    
     public function drawInventory(stage:Object){
       inventorySlot = inventory.getSprite();
 			inventorySlot.x = 32 * 18;
@@ -31,11 +37,37 @@ package{
       stage.addChild(inventorySlot)
     }
     
-    public function useItem(stage:Object):void{
-      if(inventory != null && inventory.useable){
-        inventory.useItem(stage)
-        clearInventory()
+    public function useItem(node:Node, stage:Object):void{
+      var inventoryName:String = flash.utils.getQualifiedClassName(inventory);
+      var itemName:String = null;
+      if(node != null){
+        itemName = flash.utils.getQualifiedClassName(node.item);
+      } 
+      if (inventoryName == "Sword"){
+        if (itemName == "Goat"){
+          var index:int = 0;
+          for(var i:int; i < stage.world.animals.length; i++){
+            if (stage.world.animals[i].y == (stage.world_index_y + node.y) && stage.world.animals[i].x == (stage.world_index_x + node.x)){
+              index = i;  
+              break;
+            }
+          }
+          stage.world.animals.splice(index, 1)
+          node.afterTake(stage, stage.world);
+        }
+      } else if(itemName == "Table") {
+        
+      } else {
+        if(inventory != null && inventory.useable){
+          inventory.useItem(stage)
+          clearInventory()
+        }
+        //node.useItem(stage, stage.world);
       }
+    }
+    
+    public function take(node:Node, stage:Object):void{
+      node.afterTake(stage, stage.world);
     }
     
     public function place(node:Node, stage:Object):void{

@@ -11,5 +11,10 @@ package{
 		  scaleY = 4
 		  bits = 8
     }
+    
+    override public function take(stage:Object, world:World):Item{
+      super.take(stage, world);
+      return new Meat(node);
+    }
   }
 }

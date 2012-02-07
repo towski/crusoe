@@ -4,8 +4,8 @@ package{
       super(obj_x, obj_y, stage, world, 28);
     }
     
-    override public function after_take(stage:Object, world:World):void{
-      super.after_take(stage, world)
+    override public function afterTake(stage:Object, world:World):void{
+      super.afterTake(stage, world)
     } 
   }
 }
