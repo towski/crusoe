@@ -39,6 +39,7 @@ package
     public var bed_y:int;
     public var klass:Class;
     public var gameOver:Boolean;
+    public var barrel:Array;
     public var item:Item;
     public var darkenInterval:Number;
     public var shadeVariablesFromBase:Array = [0.800, 1.000, 0.800, 0.400]
@@ -49,6 +50,7 @@ package
 
     private var _arial_fmt:TextFormat;
     private var _text_txt:TextField;
+    private var _text_interval:int;
     
     [Embed(source='previewenv.png')]
 		public var sheetClass:Class;
@@ -64,6 +66,7 @@ package
     }
     
     public function start():void{
+      barrel = new Array();
       gameOver = false;
       world_index_x = 145;
       world_index_y = 104;
@@ -108,18 +111,22 @@ package
       _text_txt.embedFonts = true;
       _text_txt.autoSize = TextFieldAutoSize.LEFT;
       _text_txt.defaultTextFormat = _arial_fmt;
-      _text_txt.text = "Begin Act 1";
+      _text_txt.text = "Robinson Crusoe";
       _text_txt.x = (stage.stageWidth  / 2 - _text_txt.width / 2);
       _text_txt.y = (stage.stageHeight / 2 - _text_txt.height / 2);
       _text_txt.textColor = 0xffffffff;
       _text_txt.embedFonts = true
       _text_txt.alpha = 2.0
       addChild(_text_txt);
-      setInterval(hideIntroText, 100)
+      _text_interval = setInterval(hideIntroText, 100)
     }
     
     public function hideIntroText():void{
-      _text_txt.alpha -= 0.05
+      _text_txt.alpha -= 0.075
+      if(_text_txt.alpha <= 0){
+        clearInterval(_text_interval)
+        removeChild(_text_txt)
+      }
     }
     
     public function updateEnergy(energyAddition:int):void{

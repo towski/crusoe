@@ -13,11 +13,13 @@ package{
 		public var sprite:SpriteSheet;
 		
 		public var inventorySlot:SpriteSheet;
+		public var equipmentSlot:SpriteSheet;
 		
     public var x:int;
     public var y:int;
     
     public var inventory:Item;
+    public var equipment:Item;
     public function Player(obj_x:int, obj_y:int, stage:Object) {
       x = obj_x;
       y = obj_y;
@@ -42,32 +44,26 @@ package{
       var itemName:String = null;
       if(node != null){
         itemName = flash.utils.getQualifiedClassName(node.item);
-      } 
+      }
+      trace(itemName)
       if (inventoryName == "Sword"){
         if (itemName == "Goat"){
-          var index:int = 0;
-          for(var i:int; i < stage.world.animals.length; i++){
-            if (stage.world.animals[i].y == (stage.world_index_y + node.y) && stage.world.animals[i].x == (stage.world_index_x + node.x)){
-              index = i;  
-              break;
-            }
-          }
-          stage.world.animals.splice(index, 1)
-          node.afterTake(stage, stage.world);
+          node.useItem(stage);
         }
-      } else if(itemName == "Table") {
-        
+      } else if(itemName != "null" && itemName != null) {
+        node.item.useItem(stage);
       } else {
         if(inventory != null && inventory.useable){
           inventory.useItem(stage)
-          clearInventory()
         }
         //node.useItem(stage, stage.world);
       }
     }
     
     public function take(node:Node, stage:Object):void{
-      node.afterTake(stage, stage.world);
+      if(!hasInventory()){
+        node.afterTake(stage, stage.world);
+      }
     }
     
     public function place(node:Node, stage:Object):void{
@@ -75,10 +71,11 @@ package{
         node.addItem(inventory, stage);
         clearInventory()
       } else {
+        var inventoryName:String = flash.utils.getQualifiedClassName(inventory);
         if (flash.utils.getQualifiedClassName(node.item) == "Barrel"){
-          if (flash.utils.getQualifiedClassName(inventory) == "Grapes" || flash.utils.getQualifiedClassName(inventory) == "Mushroom"){
+          if (inventoryName == "Grapes" || inventoryName == "Mushroom" || inventoryName == "Meat"){
             stage.food += 1
-            clearInventory()
+            stage.barrel.push(clearInventory())
             stage.food_text.text = "food:" + stage.food;
           }
         }
@@ -101,7 +98,7 @@ package{
     public function clearInventory():Item{
       var item:Item = inventory;
       inventory = null;
-      if(inventorySlot != null){
+      if(inventorySlot != null && item != null){
         inventorySlot.drawTile(item.emptyTile);
       }
       return item;

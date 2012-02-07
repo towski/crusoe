@@ -133,13 +133,14 @@ package{
       world.buffer[y][x] = this;
     }
     
-    public function useItem(stage:Object, world:World):void{
+    public function useItem(stage:Object):void{
       if(item != null && item.useable){
-        stage.world.items[y + stage.world_index_y][x + stage.world_index_x] = null
-        item.useItem(stage)
-        sprite.drawTile(item.emptyTile)
-        item = null
-        walkable = true
+        if(item.useItem(stage)){
+          stage.world.items[y + stage.world_index_y][x + stage.world_index_x] = null
+          sprite.drawTile(item.emptyTile)
+          item = null
+          walkable = true
+        }
       }
     }
     
@@ -159,13 +160,12 @@ package{
     public function afterTake(stage:Object, world:World):void{
       var emptyTile:int = item.emptyTile;
       item = item.take(stage, world)
-      drawItem(stage)
       if(item != null){
         walkable = false;
-        //sprite.drawTile(item.tile)
+        sprite.drawTile(item.tile)
       } else {
         walkable = true
-        //sprite.drawTile(emptyTile)
+        sprite.drawTile(emptyTile)
       }
     }
     

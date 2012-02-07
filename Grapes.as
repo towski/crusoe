@@ -12,8 +12,10 @@ package{
       return null;
     }
     
-    override public function useItem(stage:Object):void{
+    override public function useItem(stage:Object):Boolean{
       stage.updateEnergy(20);
+      stage.world.player.clearInventory()
+      return true;
     }
   }
 }

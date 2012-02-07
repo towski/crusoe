@@ -3,7 +3,8 @@ package{
     
     public function Meat(related_node:Node) {
       super(related_node)
-      tile = 17
+      tile = 23
+      emptyTile = 24
       itemSheet = new piratesSheetClass()
       useable = true
     }
@@ -13,8 +14,9 @@ package{
       return null;
     }
     
-    override public function useItem(stage:Object):void{
-      stage.updateEnergy(20);
+    override public function useItem(stage:Object):Boolean{
+      stage.updateEnergy(50);
+      return true;
     }
   }
 }

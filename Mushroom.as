@@ -11,8 +11,9 @@ package{
       return null;
     }
     
-    override public function useItem(stage:Object):void{
+    override public function useItem(stage:Object):Boolean{
       stage.energy += 20;
+      return true;
     }
   }
 }

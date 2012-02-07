@@ -62,7 +62,8 @@ package{
       return null;
     }
     
-    public function useItem(stage:Object):void{
+    public function useItem(stage:Object):Boolean{
+      return true
     }
   }
 }
