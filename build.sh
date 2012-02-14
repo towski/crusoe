@@ -1,5 +1,5 @@
 #!/bin/bash
-mxmlc GreenValley.as -o output.swf
+mxmlc Island.as -o output.swf
 if [ "0" = $? ]
 then
   open output.swf

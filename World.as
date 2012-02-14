@@ -12,7 +12,7 @@ package{
     public var terrain:Array;
     public var player:Object;
     public var breakGround:Boolean;
-    public var follow:Boolean;
+    public var derail:Boolean = false;
     public var map:Array;
     public var cumulative_x:int;
     public var cumulative_y:int;
@@ -23,7 +23,6 @@ package{
       buffer = new Array();
       items = new Array()
       animals = new Array();
-      follow = true;
       cumulative_x = 0;
       cumulative_y = 0;
     }
@@ -62,6 +61,28 @@ package{
             } else if(random < 90){
               items[y][x] = Bush
             }
+          } else if (char == 'T'){
+            klass = Mud;
+            items[y][x] = Sword
+          } else if (char == 't'){
+            klass = Sand;
+            items[y][x] = Table
+          } else if (char == 'd'){
+            klass = Sand;
+            items[y][x] = Skull
+          } else if (char == 'X'){
+            klass = Ground;
+            stage.world_index_y = y
+            stage.world_index_x = x
+          } else if (char == 'G'){
+            items[y][x] = Goat
+            animals.push(new Animal(Goat, x, y))
+          } else if (char == 'S'){
+            items[y][x] = SheGoat
+            animals.push(new Animal(SheGoat, x, y))
+          } else if (char == 's'){
+            items[y][x] = SheKid
+            animals.push(new Animal(SheKid, x, y))          
           } else {
             klass = Ground;
             var random:int = Math.floor(Math.random() * 201);
@@ -81,10 +102,7 @@ package{
       
       items[stage.world_index_y + 9][stage.world_index_x + 9] = Barrel
       items[stage.world_index_y + 9][stage.world_index_x + 10] = Rum
-      items[stage.world_index_y + 8][stage.world_index_x + 9] = Sword
-      items[stage.world_index_y + 8][stage.world_index_x + 11] = Table
-      items[stage.world_index_y + 8][stage.world_index_x + 10] = Skull
-      items[stage.world_index_y + 4][stage.world_index_x + 4] = Goat
+      
       items[stage.world_index_y + 10][stage.world_index_x + 10] = null
       
       
@@ -97,10 +115,6 @@ package{
           buffer[i][j] = object;
         }
       }
-      animals.push(new Animal(Goat, stage.world_index_x + 4, stage.world_index_y + 4))
-      //animals.push(new Animal(Goat, stage.world_index_x - 10, stage.world_index_y - 4))
-      //animals.push(new Animal(Goat, stage.world_index_x - 20, stage.world_index_y + 5))
-      //animals.push(new Animal(Goat, stage.world_index_x + 6, stage.world_index_y + 6))
       
       player = new Player(10, 10, stage);
       
@@ -110,7 +124,7 @@ package{
     public function move(items:Array, stage:Object):void{
       for(var i:int = 0; i < animals.length; i++){
         var animal:Animal = animals[i];
-        var random:int = Math.floor(Math.random() * 3);
+        var random:int = Math.floor(Math.random() * animal.moveChances());
         if(random < 1){
           var results:Array = globalNeighbors(animal.x, animal.y, items)
           random = Math.floor(Math.random() * results.length);
@@ -122,7 +136,8 @@ package{
           var newX:int = results[random][0][1]
           if(onMap(newX, newY, stage)){
             var node:Node = buffer[newY - stage.world_index_y][newX - stage.world_index_x]
-            if(node.walkable && (player.x + stage.world_index_x) != newX && (player.y + stage.world_index_y) != newY){
+            var playerIntersect:Boolean = (player.x + stage.world_index_x) == newX && (player.y + stage.world_index_y) == newY
+            if(node.walkable && !playerIntersect){
               items[animal.y][animal.x] = null
               animal.x = newX;
               animal.y = newY;
@@ -130,7 +145,7 @@ package{
               if(oldNode != null){
                 oldNode.removeItem(stage)
               }
-              node.addItem(new animal.animalClass(node), stage)
+              node.addItem(animal.newAnimal(node), stage)
             }
           } else {
             if(items[newY][newX] == null){
@@ -247,10 +262,14 @@ package{
       stage.world_index_y += 1;
        for(var x:int = 0; x < 20; x++){
          var object:Node = buffer[0][x];
+         object.groundSprite.canvasBitmapData.dispose();
          stage.removeChild(object.groundSprite);
          if(object.sprite != null && object.sprite != object.groundSprite){
+           object.sprite.canvasBitmapData.dispose();
            stage.removeChild(object.sprite);
+           object.sprite = null
          }
+         object.groundSprite = null
        }
        buffer.splice(0,1);
        buffer.push(new Array());
@@ -272,10 +291,14 @@ package{
       stage.world_index_y -= 1;
       for(var x:int = 0; x < 20; x++){
         var object:Node = buffer[19][x];
+        object.groundSprite.canvasBitmapData.dispose();
         stage.removeChild(object.groundSprite);
         if(object.sprite != null && object.sprite != object.groundSprite){
+          object.sprite.canvasBitmapData.dispose();
           stage.removeChild(object.sprite);
+          object.sprite = null
         }
+        object.groundSprite = null
       }
       buffer.splice(19,1);
       buffer.unshift(new Array());
@@ -300,40 +323,18 @@ package{
        }
     }
     
-    public function moveCameraUpNew(stage:Object, move:Boolean = true):void{
-      stage.world_index_y -= 1;
-      
-      for(var y:int = 0; y < 11; y++){
-        for(var x:int = 0; x < 20; x++){
-          buffer[y][x].sprite.drawTile(items[stage.world_index_y + y][stage.world_index_x + x])
-          buffer[y][x].groundSprite.drawTile(terrain[stage.world_index_y + y][stage.world_index_x + x])
-          //buffer[y][x].groundSprite.drawTile(terrain[stage.world_index_y + y][stage.world_index_x + x])
-          //buffer[y][x].sprite.drawTile(terrain[x][y])
-        }
-      }
-      
-      for(var y:int = 11; y < 20; y++){
-        for(var x:int = 0; x < 20; x++){
-          buffer[y][x].groundSprite.drawTile(terrain[stage.world_index_y + y][stage.world_index_x + x])
-          buffer[y][x].sprite.drawTile(items[stage.world_index_y + y][stage.world_index_x + x])
-          //buffer[y][x].sprite.drawTile(items[stage.world_index_y + y][stage.world_index_x + x])
-          //buffer[y][x].sprite.drawTile(terrain[x][y])
-        }
-      }
-      if(move){
-        player.y += 1;
-        player.sprite.y += 32; 
-      }
-    }
-    
     public function moveCameraLeft(stage:Object, move:Boolean = true):void{
       stage.world_index_x -= 1;
       for(var y:int = 0; y < 20; y++){
         var object:Node = buffer[y][19];
+        object.groundSprite.canvasBitmapData.dispose();
         stage.removeChild(object.groundSprite);
         if(object.sprite != null && object.sprite != object.groundSprite){
+          object.sprite.canvasBitmapData.dispose();
           stage.removeChild(object.sprite);
+          object.sprite = null
         }
+        object.groundSprite = null
         buffer[y].pop();
       }
       for(y = 0; y < 20; y++){
@@ -354,10 +355,14 @@ package{
       stage.world_index_x += 1;
       for(var y:int = 0; y < 20; y++){
         var object:Node = buffer[y][0];
+        object.groundSprite.canvasBitmapData.dispose();
         stage.removeChild(object.groundSprite);
         if(object.sprite != null && object.sprite != object.groundSprite){
+          object.sprite.canvasBitmapData.dispose();
           stage.removeChild(object.sprite);
+          object.sprite = null
         }
+        object.groundSprite = null
         buffer[y].shift();
       }
       for(y = 0; y < 20; y++){
@@ -374,52 +379,76 @@ package{
       }
     }
     
-    public function movePerson(x:int, y:int, graphics:Object, setMoving:Boolean, stage:Object):void{
+    public function clearLocalItem(x:int, y:int, stage:Object):void{
+      items[stage.world_index_y + y][stage.world_index_x + x] = null
+    }
+    
+    public function localItem(x:int, y:int, stage:Object):Object{
+      return items[stage.world_index_y + y + cumulative_y][stage.world_index_x + x + cumulative_x]
+    }
+    
+    public function movePerson(x:int, y:int, setMoving:Boolean, stage:Object, follow:Boolean = true):void{
       if (!setMoving){
         setTimeout(finishMoving, 500, stage);
       }
-      if(follow){
-        if (x + cumulative_x > player.x){
-          player.sprite.drawTile(492);
-        } else if (x + cumulative_x < player.x){
-          player.sprite.drawTile(494);
-        } else if (y + cumulative_y < player.y){
-          player.sprite.drawTile(495);
-        } else {
-          player.sprite.drawTile(493);
+      if(localItem(x,y, stage) == null && !derail){
+        if(follow){
+          if (x + cumulative_x > player.x){
+            player.sprite.drawTile(492);
+          } else if (x + cumulative_x < player.x){
+            player.sprite.drawTile(494);
+          } else if (y + cumulative_y < player.y){
+            player.sprite.drawTile(495);
+          } else {
+            player.sprite.drawTile(493);
+          }
+          if ((y + cumulative_y) < player.y){
+            cumulative_y += 1
+            moveCameraUp(stage, false);
+          } else if ((y + cumulative_y) > player.y){
+            cumulative_y -= 1
+            moveCameraDown(stage, false);
+          }
+          if ((x + cumulative_x) < player.x){
+            cumulative_x += 1
+            moveCameraLeft(stage, false);
+          } else if ((x + cumulative_x) > player.x){
+            cumulative_x -= 1
+            moveCameraRight(stage, false);
+          }
+          stage.moving = setMoving;
+          stage.addChild(player.sprite);
+        } else if(!stage.moving){
+          var node:Node = buffer[y][x]
+          if(node.walkable){
+            if (x > player.x){
+              player.sprite.drawTile(492);
+              moveCameraRight(stage, false);
+            } else if (x < player.x){
+              player.sprite.drawTile(494);
+              moveCameraLeft(stage, false);
+            } 
+            if (y < player.y){
+              player.sprite.drawTile(495);
+              moveCameraUp(stage, false);
+            } else if (y > player.y) {
+              player.sprite.drawTile(493);
+              moveCameraDown(stage, false);
+            }
+            stage.addChild(player.sprite);
+          }
+          //player.x = x;
+          //player.y = y;
+          //player.sprite.x = 32 * x;
+          //player.sprite.y = 32 * y; 
         }
-        if ((y + cumulative_y) < player.y){
-          cumulative_y += 1
-          moveCameraUp(stage, false);
-        } else if ((y + cumulative_y) > player.y){
-          cumulative_y -= 1
-          moveCameraDown(stage, false);
-        }
-        if ((x + cumulative_x) < player.x){
-          cumulative_x += 1
-          moveCameraLeft(stage, false);
-        } else if ((x + cumulative_x) > player.x){
-          cumulative_x -= 1
-          moveCameraRight(stage, false);
-        }
-      } else {
-        if (x > player.x){
-          player.sprite.drawTile(492);
-        } else if (x < player.x){
-          player.sprite.drawTile(494);
-        } else if (y < player.y){
-          player.sprite.drawTile(495);
-        } else {
-          player.sprite.drawTile(493);
-        }
-        player.x = x;
-        player.y = y;
-        player.sprite.x = 32 * x;
-        player.sprite.y = 32 * y; 
+      } else if(follow) {
+        derail = true
+        stage.moving = false
+			}
+			if(!setMoving){
+        derail = false
       }
-      stage.moving = setMoving;
-      stage.addChild(player.sprite);
-			
     }
   }
 }

@@ -9,7 +9,6 @@ package{
     
     override public function take(stage:Object, world:World):Item{
 //      super.take(stage, world, closure);
-      stage.moving = false;
       stage.updateEnergy(-4);
       return new Log(node)
     }

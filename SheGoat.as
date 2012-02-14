@@ -1,10 +1,10 @@
 package{
   import flash.utils.*;
   
-  public class Goat extends Item{
-    public function Goat(related_node:Node) {
+  public class SheGoat extends Item{
+    public function SheGoat(related_node:Node) {
       super(related_node, true)
-      tile = 217;
+      tile = 218;
       itemSheet = new charSheetClass()
       emptyTile = 461
 		  scaleX = 4
@@ -36,7 +36,7 @@ package{
     }
     
     override public function place(stage:Object, x:int, y:int):void{
-      stage.world.animals.push(new Animal(Goat, stage.world_index_x + x, stage.world_index_y + y))
+      stage.world.animals.push(new Animal(SheGoat, stage.world_index_x + x, stage.world_index_y + y))
     }
   }
 }

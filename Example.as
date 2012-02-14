@@ -6,6 +6,9 @@
 //sprite.y = 25 * y;
 
 
+
+//var random:int = Math.floor(Math.random() * 101);
+
 //new Cow(Math.floor(Math.random() * 24), Math.floor(Math.random() * 24), stage, this);
 
 

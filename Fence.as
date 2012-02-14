@@ -17,16 +17,5 @@ package{
         return false;
       }
     }
-    
-    override public function place(stage:Object, x:int, y:int):void{
-      super.place(stage, x, y);
-      stage.wood -= 1;
-      stage.updateEnergy(-1);
-    }
-    
-    override public function take(stage:Object, world:World):Item{
-      super.take(stage, world);
-      return this
-    }
   }
 }

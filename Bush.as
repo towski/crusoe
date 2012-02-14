@@ -4,6 +4,7 @@ package{
       super(related_node)
       tile = 78;
       delay = 400;
+      takeable = true
     }
     
     override public function take(stage:Object, world:World):Item{

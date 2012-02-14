@@ -27,7 +27,6 @@ package{
     
     override public function take(stage:Object, world:World, closure:Function):void{
       super.take(stage, world, closure);
-      stage.moving = false;
       stage.updateEnergy(-4);
     }
   }

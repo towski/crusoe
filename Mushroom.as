@@ -4,6 +4,8 @@ package{
       super(related_node)
       tile = 108
       delay = 10000
+      useable = true
+      takeable = true
     }
     
     override public function take(stage:Object, world:World):Item{
@@ -12,7 +14,12 @@ package{
     }
     
     override public function useItem(stage:Object):Boolean{
-      stage.energy += 20;
+      stage.updateEnergy(20);
+      if(node == null){
+        stage.world.player.clearInventory(stage)
+      } else {
+        node.removeItem(stage)
+      }
       return true;
     }
   }

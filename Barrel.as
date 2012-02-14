@@ -5,6 +5,7 @@ package{
       tile = 0;
       itemSheet = new itemSheetClass()
       useable = true
+      takeable = true
     } 
     
     override public function take(stage:Object, world:World):Item{

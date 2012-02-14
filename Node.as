@@ -71,30 +71,46 @@ package{
     public function drawItem(stage:Object):void{
       if(sprite == null){
         if(item != null){
-			    sprite = item.getSprite();
+          try {
+            sprite = item.getSprite();
+          } catch (e:Error) {
+            trace(e)
+            if (e.errorID == 2015) {
+              trace("memory error")
+            } else {
+              throw e;
+            }
+          }
 			    sprite.x = 32 * x;
 			    sprite.y = 32 * y;
 			    sprite.scaleX = item.scaleX;
           sprite.scaleY = item.scaleY;
+			    sprite.rotation = item.rotation;
 			    sprite.drawTile(item.tile);
 			    darkenItem(stage.shadeFromBase())
 			    stage.addChild(sprite);
 		    }
 		  } else {
 		    if(item != null){
-		      if(flash.utils.getDefinitionByName(flash.utils.getQualifiedClassName(sprite)) == item.itemSheet){
-            sprite.drawTile(item.tile)
-          } else {
-            //stage.removeChild(sprite)
+          //stage.removeChild(sprite)
+          try {
             sprite = item.getSprite();
-  			    sprite.x = 32 * x;
-  			    sprite.y = 32 * y;
-  			    sprite.scaleX = item.scaleX;
-            sprite.scaleY = item.scaleY;
-  			    sprite.drawTile(item.tile);
-  			    darkenItem(stage.shadeFromBase())
-  			    stage.addChild(sprite);
+          } catch (e:Error) {
+            trace(e)
+            if (e.errorID == 2015) {
+              trace("memory error")
+            } else {
+              throw e;
+            }
           }
+  			  sprite.x = 32 * x;
+  			  sprite.y = 32 * y;
+  			  sprite.scaleX = item.scaleX;
+          sprite.scaleY = item.scaleY;
+          sprite.rotation = item.rotation;
+  			  sprite.drawTile(item.tile);
+  			  darkenItem(stage.shadeFromBase())
+  			  stage.addChild(sprite);
         }
       }
     }
@@ -126,21 +142,27 @@ package{
       }
     }
     
-    public function place(stage:Object, world:World):void{
-      stage.addChild(sprite)
+    public function place(stage:Object):void{
+      if(item != null){
+        item.place(stage, x, y)
+      }
       //stage.swapChildren(sprite, world.world[y][x].sprite)
       //stage.removeChild(world.world[y][x].sprite)
-      world.buffer[y][x] = this;
+      //world.buffer[y][x] = this;
+    }
+    
+    public function forceUseItem(stage:Object):void{
+      if(item.useItem(stage)){
+        stage.world.items[y + stage.world_index_y][x + stage.world_index_x] = null
+        sprite.drawTile(item.emptyTile)
+        item = null
+        walkable = true
+      }
     }
     
     public function useItem(stage:Object):void{
       if(item != null && item.useable){
-        if(item.useItem(stage)){
-          stage.world.items[y + stage.world_index_y][x + stage.world_index_x] = null
-          sprite.drawTile(item.emptyTile)
-          item = null
-          walkable = true
-        }
+        forceUseItem(stage)
       }
     }
     
@@ -164,6 +186,7 @@ package{
         walkable = false;
         sprite.drawTile(item.tile)
       } else {
+        world.clearLocalItem(x, y, stage)
         walkable = true
         sprite.drawTile(emptyTile)
       }

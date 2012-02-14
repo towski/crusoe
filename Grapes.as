@@ -5,6 +5,7 @@ package{
       super(related_node)
       tile = 127
       useable = true
+      takeable = true
     }
     
     override public function take(stage:Object, world:World):Item{
@@ -14,7 +15,11 @@ package{
     
     override public function useItem(stage:Object):Boolean{
       stage.updateEnergy(20);
-      stage.world.player.clearInventory()
+      if(node == null){
+        stage.world.player.clearInventory(stage)
+      } else {
+        node.removeItem(stage)
+      }
       return true;
     }
   }

@@ -7,6 +7,7 @@ package{
       emptyTile = 24
       itemSheet = new piratesSheetClass()
       useable = true
+      takeable = true
     }
     
     override public function take(stage:Object, world:World):Item{
@@ -16,6 +17,7 @@ package{
     
     override public function useItem(stage:Object):Boolean{
       stage.updateEnergy(50);
+      stage.world.player.clearInventory(stage)
       return true;
     }
   }

@@ -25,11 +25,15 @@ package{
     public var emptyTile:int;
     public var useable:Boolean;
     public var takeable:Boolean;
+    public var equipable:Boolean;
+    
     public var node:Node;
     public var bits:int;
     
+    public var animal:Animal;
     public var scaleX:int;
     public var scaleY:int;
+    public var rotation:int = 0;
     
     public function Item(related_node:Node, customSheet:Boolean = false) {
       node = related_node
@@ -40,7 +44,8 @@ package{
       tile = 14
       bits = 32
       useable = false
-      takeable = false
+      takeable = true
+      equipable = false
       
 		  scaleX = 1
 		  scaleY = 1
@@ -55,7 +60,7 @@ package{
     }
     
     public function place(stage:Object, x:int, y:int):void{
-      stage.updateEnergy(-1);
+      //stage.updateEnergy(-1);
     }
     
     public function take(stage:Object, world:World):Item{

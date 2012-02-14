@@ -5,7 +5,8 @@ package{
       tile = 9;
       itemSheet = new piratesSheetClass()
       emptyTile = 24
-      
+      equipable = true
+      takeable = true
     } 
     
     override public function take(stage:Object, world:World):Item{
