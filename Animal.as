@@ -4,6 +4,7 @@ package{
     public var y:int;
     public var x:int;
     public var attacked:Boolean = false;
+    public var health:int = 3;
 
     public var animalClass:Class;
     public function Animal(localAnimalClass:Class, world_x:int, world_y:int){
@@ -15,6 +16,7 @@ package{
     public function newAnimal(node:Node):Item{
       var animal:Item = new animalClass(node)
       animal.animal = this
+      attacked = animal.attacked
       return animal;
     }
     

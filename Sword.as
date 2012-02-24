@@ -4,7 +4,7 @@ package{
       super(related_node, true)
       tile = 9;
       itemSheet = new piratesSheetClass()
-      emptyTile = 24
+      emptyTile = 26
       equipable = true
       takeable = true
     } 

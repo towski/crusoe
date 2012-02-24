@@ -1,7 +1,10 @@
 package{
   import flash.display.Bitmap;
+  import flash.utils.getQualifiedClassName
   
   public class Item{
+    static public var walkable:Boolean = false;
+    
     [Embed(source='previewenv.png')]
   	public var sheetClass:Class;
     
@@ -26,9 +29,12 @@ package{
     public var useable:Boolean;
     public var takeable:Boolean;
     public var equipable:Boolean;
+    public var walkable:Boolean;
+    public var attacked:Boolean;
     
     public var node:Node;
     public var bits:int;
+    public var wood:int;
     
     public var animal:Animal;
     public var scaleX:int;
@@ -46,7 +52,8 @@ package{
       useable = false
       takeable = true
       equipable = false
-      
+      walkable = false
+      wood = 0
 		  scaleX = 1
 		  scaleY = 1
     }
@@ -59,6 +66,18 @@ package{
       return true;
     }
     
+    public function removeAnimal(stage:Object):void{
+      var index:int = 0;
+      for(var i:int; i < stage.world.animals.length; i++){
+        if (stage.world.animals[i].y == (stage.world_index_y + node.y) && stage.world.animals[i].x == (stage.world_index_x + node.x)){
+          index = i;  
+          break;
+        }
+      }
+      stage.world.animals.splice(index, 1)
+      node.removeItem(stage)
+    }
+    
     public function place(stage:Object, x:int, y:int):void{
       //stage.updateEnergy(-1);
     }
@@ -67,7 +86,7 @@ package{
       return null;
     }
     
-    public function useItem(stage:Object):Boolean{
+    public function useItem(stage:Object, used:Item):Boolean{
       return true
     }
   }

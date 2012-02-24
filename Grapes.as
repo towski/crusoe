@@ -13,8 +13,8 @@ package{
       return null;
     }
     
-    override public function useItem(stage:Object):Boolean{
-      stage.updateEnergy(20);
+    override public function useItem(stage:Object, used:Item):Boolean{
+      stage.updateHunger(0.5);
       if(node == null){
         stage.world.player.clearInventory(stage)
       } else {

@@ -22,12 +22,15 @@ package{
     public var inventory:Item;
     public var inventoryClass:Object;
     public var equipment:Item;
+    public var equipmentClass:Object;
+    
+    public var hand:String;
     
     public var inventoryHighlight:Sprite;
     public function Player(obj_x:int, obj_y:int, stage:Object) {
       x = obj_x;
       y = obj_y;
-			
+			hand = "left"
       drawSprite(stage);
       inventoryHighlight = new Sprite()
       inventoryHighlight.graphics.beginFill(0xaaaaaa);
@@ -43,7 +46,7 @@ package{
       sprite.canvasBitmapData.colorTransform(new Rectangle(0, 0, 32, 32), new ColorTransform(shade, shade, shade));
     }
     
-    public function drawInventory(stage:Object){
+    public function drawInventory(stage:Object):void{
       inventorySlot = inventory.getSprite();
 			inventorySlot.x = 32 * 16.5;
 			inventorySlot.y = 32 * 20.5;
@@ -51,7 +54,7 @@ package{
       stage.addChild(inventorySlot)
     }
     
-    public function drawEquipment(stage:Object){
+    public function drawEquipment(stage:Object):void{
       equipmentSlot = equipment.getSprite();
 			equipmentSlot.x = 32 * 18;
 			equipmentSlot.y = 32 * 20.5;
@@ -62,58 +65,87 @@ package{
     public function useItem(node:Node, stage:Object):void{
       var inventoryName:String = flash.utils.getQualifiedClassName(inventory);
       var equipmentName:String = flash.utils.getQualifiedClassName(equipment);
-      
-      var itemName:String = null;
-      if(node != null){
-        itemName = flash.utils.getQualifiedClassName(node.item);
+      trace("useItem:" + hand)
+      if(hand == "left" && inventory != null){
+        inventory.useItem(stage, node == null ? null : node.item)
+      } else if(equipment != null) {
+        equipment.useItem(stage, node == null ? null : node.item)
       }
-      if (equipmentName == "Sword"){
-        if (itemName == "Goat"){
-          node.forceUseItem(stage);
-        }
-      } 
-      if(itemName != "null" && itemName != null) {
-        if(node.item.useable){
-          node.item.useItem(stage);
-        } else if(node.item.equipable) {
-          addToEquipment(node.item, stage)
-          node.removeItem(stage)
-        }
-      } else {
-        if(inventory != null && inventory.useable){
-          inventory.useItem(stage)
-        }
-        //node.useItem(stage, stage.world);
-      }
+      //var itemName:String = null;
+      //if(node != null){
+      //  itemName = flash.utils.getQualifiedClassName(node.item);
+      //  trace(itemName)
+      //}
+      //if (equipmentName == "Sword"){
+      //  if (itemName == "Goat"){
+      //    node.forceUseItem(stage);
+      //  }
+      //} 
+      //if(itemName != "null" && itemName != null) {
+      //  trace(node.item)
+      //  if(node.item.useable){
+      //    node.item.useItem(stage);
+      //  } else if(node.item.equipable) {
+      //    addToEquipment(node.item, stage)
+      //    node.removeItem(stage)
+      //  }
+      //} else {
+      //  if(inventory != null && inventory.useable){
+      //    inventory.useItem(stage)
+      //  }
+      //  //node.useItem(stage, stage.world);
+      //}
     }
     
     public function take(node:Node, stage:Object):void{
-      if(!hasInventory()){
-        node.afterTake(stage, stage.world);
+      if(!handFull()){
         if(node.item != null){
           node.item.node = null
         }
+        node.afterTake(stage, stage.world);
+      }
+    }
+    
+    public function handItemName():String{
+      if(hand == "left"){
+        return flash.utils.getQualifiedClassName(inventory);
+      } else {
+        return flash.utils.getQualifiedClassName(equipment);
       }
     }
     
     public function place(node:Node, stage:Object):void{
       if(node.item == null){
-        node.addItem(new inventoryClass(node), stage);
+        if(hand == "left"){
+          node.addItem(new inventoryClass(node), stage);
+          clearInventory(stage)
+        } else {
+          node.addItem(new equipmentClass(node), stage);
+          clearInventory(stage)
+        }
         node.place(stage)
-        clearInventory(stage)
       } else {
-        var inventoryName:String = flash.utils.getQualifiedClassName(inventory);
-        if (flash.utils.getQualifiedClassName(node.item) == "Barrel"){
+        trace("nest")
+        var inventoryName:String = handItemName()
+        var nodeItemName:String = flash.utils.getQualifiedClassName(node.item)
+        if (nodeItemName == "Barrel"){
           if (inventoryName == "Grapes" || inventoryName == "Mushroom" || inventoryName == "Meat"){
             stage.food += 1
             stage.barrel.push(clearInventory(stage))
             stage.food_text.text = "food:" + stage.food;
           }
         }
-        if (flash.utils.getQualifiedClassName(node.item) == "Table"){
-          if (flash.utils.getQualifiedClassName(inventory) == "Log"){
+        if (nodeItemName == "Table"){
+          if (inventoryName == "Log"){
             stage.wood += 1
             clearInventory(stage)
+            stage.wood_text.text = "wood:" + stage.wood;
+          }
+        }
+        if (nodeItemName == "Chest"){
+          if (inventoryName == "Axe"){
+            //storage["1,2"] = ''
+            //stage.storeItem(node, clearInventory(stage))
             stage.wood_text.text = "wood:" + stage.wood;
           }
         }
@@ -121,10 +153,17 @@ package{
     }
     
     public function addToInventory(object:Item, stage:Object):void{
-      inventory = object;
-      inventoryClass = flash.utils.getDefinitionByName(flash.utils.getQualifiedClassName(inventory))
-      drawInventory(stage)
-      inventorySlot.drawTile(object.tile);
+      if(hand == "left"){
+        inventory = object;
+        inventoryClass = flash.utils.getDefinitionByName(flash.utils.getQualifiedClassName(inventory))
+        drawInventory(stage)
+        inventorySlot.drawTile(object.tile);
+      } else {
+        equipment = object;
+        equipmentClass = flash.utils.getDefinitionByName(flash.utils.getQualifiedClassName(equipment))
+        drawEquipment(stage)
+        equipmentSlot.drawTile(object.tile);
+      }
     }
     
     public function addToEquipment(object:Item, stage:Object):void{
@@ -139,23 +178,74 @@ package{
       } else {
         inventoryHighlight.x = 32 * 16;
       }
+      if(hand == 'left'){
+        hand = 'right'
+      } else {
+        hand = 'left'
+      }
     }
     
     public function clearInventory(stage:Object):Item{
-      var item:Item = inventory;
-      inventory = null;
-      inventoryClass = null;
-      if(inventorySlot != null && item != null){
-        stage.removeChild(inventorySlot)
+      if(hand == 'left'){
+        var item:Item = inventory;
+        inventory = null;
+        inventoryClass = null;
+        if(inventorySlot != null && item != null){
+          stage.removeChild(inventorySlot)
+        }
+        return item;
+      } else {
+        var item:Item = equipment;
+        equipment = null;
+        equipmentClass = null;
+        if(equipmentSlot != null && item != null){
+          stage.removeChild(equipmentSlot)
+        }
+        return item;
       }
-      return item;
+    }
+    
+    public function useHand(node:Node, stage:Object):void{
+      if(hand == "left"){
+        if(hasInventory()){
+          useItem(node, stage)
+        }
+      } else {
+        if(hasEquipment()){
+          useItem(node, stage)
+        }
+      }
+    }
+    
+    public function handFull():Boolean{
+      if(hand == "left"){
+        return hasInventory()
+      } else {
+        return hasEquipment()
+      }      
+    }
+    
+    public function bothHandsFull():Boolean{
+      return inventory != null && equipment != null
+    }
+    
+    public function currentHand():Item{
+      if(hand == "left"){
+        return inventory
+      } else {
+        return equipment
+      }
     }
     
     public function hasInventory():Boolean{
       return inventory != null;
     }
     
-    public function drawSprite(stage:Object){
+    public function hasEquipment():Boolean{
+      return equipment != null;
+    }
+    
+    public function drawSprite(stage:Object):void{
       sprite = new SpriteSheet(sheet, 8, 8);
       sprite.scaleX = 4;
       sprite.scaleY = 4;

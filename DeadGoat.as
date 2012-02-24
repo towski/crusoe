@@ -18,7 +18,7 @@ package{
       return null;
     }
     
-    override public function useItem(stage:Object):Boolean{
+    override public function useItem(stage:Object, used:Item):Boolean{
       node.removeItem(stage)
       node.addItem(new Meat(node), stage);
       return false;

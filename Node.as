@@ -69,50 +69,20 @@ package{
     }
     
     public function drawItem(stage:Object):void{
-      if(sprite == null){
-        if(item != null){
-          try {
-            sprite = item.getSprite();
-          } catch (e:Error) {
-            trace(e)
-            if (e.errorID == 2015) {
-              trace("memory error")
-            } else {
-              throw e;
-            }
-          }
-			    sprite.x = 32 * x;
-			    sprite.y = 32 * y;
-			    sprite.scaleX = item.scaleX;
-          sprite.scaleY = item.scaleY;
-			    sprite.rotation = item.rotation;
-			    sprite.drawTile(item.tile);
-			    darkenItem(stage.shadeFromBase())
-			    stage.addChild(sprite);
-		    }
-		  } else {
-		    if(item != null){
-          //stage.removeChild(sprite)
-          try {
-            sprite = item.getSprite();
-          } catch (e:Error) {
-            trace(e)
-            if (e.errorID == 2015) {
-              trace("memory error")
-            } else {
-              throw e;
-            }
-          }
-  			  sprite.x = 32 * x;
-  			  sprite.y = 32 * y;
-  			  sprite.scaleX = item.scaleX;
-          sprite.scaleY = item.scaleY;
-          sprite.rotation = item.rotation;
-  			  sprite.drawTile(item.tile);
-  			  darkenItem(stage.shadeFromBase())
-  			  stage.addChild(sprite);
+      if(item != null){
+        if(sprite != null && stage.contains(sprite)){
+          stage.removeChild(sprite)
         }
-      }
+        sprite = item.getSprite();
+			  sprite.x = 32 * x;
+			  sprite.y = 32 * y;
+			  sprite.scaleX = item.scaleX;
+        sprite.scaleY = item.scaleY;
+			  sprite.rotation = item.rotation;
+			  sprite.drawTile(item.tile);
+			  darkenItem(stage.shadeFromBase())
+			  stage.addChild(sprite);
+		  }
     }
     
     public function update(local_x:int, local_y:int):void{
@@ -134,7 +104,6 @@ package{
       //object.place(stage, x, y)
       if(object != null){
         stage.world.items[y + stage.world_index_y][x + stage.world_index_x] = flash.utils.getDefinitionByName(flash.utils.getQualifiedClassName(object));
-        walkable = !walkable
         item = object
         drawItem(stage)
       } else {
@@ -152,11 +121,10 @@ package{
     }
     
     public function forceUseItem(stage:Object):void{
-      if(item.useItem(stage)){
+      if(item.useItem(stage, item)){
         stage.world.items[y + stage.world_index_y][x + stage.world_index_x] = null
         sprite.drawTile(item.emptyTile)
         item = null
-        walkable = true
       }
     }
     
@@ -171,23 +139,20 @@ package{
         stage.world.items[y + stage.world_index_y][x + stage.world_index_x] = null
         sprite.drawTile(item.emptyTile)
         item = null
-        walkable = true
       }
     }
     
     public function isWalkable():Boolean{
-      return walkable == true && item == null
+      return walkable && (item == null || item.walkable)
     }
     
     public function afterTake(stage:Object, world:World):void{
       var emptyTile:int = item.emptyTile;
       item = item.take(stage, world)
       if(item != null){
-        walkable = false;
         sprite.drawTile(item.tile)
       } else {
         world.clearLocalItem(x, y, stage)
-        walkable = true
         sprite.drawTile(emptyTile)
       }
     }

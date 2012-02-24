@@ -14,22 +14,14 @@ package{
 		  takeable = false
     }
     
-    override public function useItem(stage:Object):Boolean{
+    override public function useItem(stage:Object, used:Item):Boolean{
       if(animal != null){
         animal.attacked = true
       }
       stage.updateEnergy(-10);
       var random:int = Math.floor(Math.random() * 3);
       if(random < 1){
-        var index:int = 0;
-        for(var i:int; i < stage.world.animals.length; i++){
-          if (stage.world.animals[i].y == (stage.world_index_y + node.y) && stage.world.animals[i].x == (stage.world_index_x + node.x)){
-            index = i;  
-            break;
-          }
-        }
-        stage.world.animals.splice(index, 1)
-        node.removeItem(stage)
+        removeAnimal(stage)
         node.addItem(new DeadGoat(node), stage);
       }
       return false

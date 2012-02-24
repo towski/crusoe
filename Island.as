@@ -12,7 +12,7 @@ package
   import flash.text.TextFormat;
   import flash.text.TextFieldAutoSize;
 
-  [SWF(backgroundColor="#ffffff", frameRate="24", width="640", height="800")]
+  [SWF(backgroundColor="#000000", frameRate="24", width="640", height="760")]
   public class Island extends Sprite
   {   
     public var world:World;
@@ -24,6 +24,10 @@ package
     public var maxEnergy:int;
     public var wood:int;
     public var food:int;
+    public var hunger:Number;
+    public var health:Number;
+    public var storage:Object
+    
     public var day:int;
     public var interval:int;
     public var daytime:Boolean;
@@ -31,123 +35,131 @@ package
     public var world_index_x:int;
     public var moving:Boolean;
     public var mode:String;
+    
     public var energy_text : TextField;
     public var gameOverText : TextField;
     public var wood_text : TextField;
     public var food_text : TextField;
     public var hunger_text : TextField;
+    public var health_text : TextField;
+    
     public var bed_x:int;
     public var bed_y:int;
     public var klass:Class;
-    public var hunger:int;
-    public var gameOver:Boolean;
+    public var gameOver:Boolean = true;
     public var barrel:Array;
     public var item:Item;
+    public var player:Player;
     public var darkenInterval:Number;
     public var shadeVariablesFromBase:Array = [0.800, 1.000, 0.800, 0.400]
     public var shadeVariables:Array = [1.2500, 0.800, 0.500, 2.000];
+    public var craftScreen:CraftScreen;
     
     [Embed(source="FFFHARMO.TTF", fontFamily="Harmony")]
     private var _arial_str:String;
 
-    private var _arial_fmt:TextFormat;
+    private var harmony_format:TextFormat;
     private var text_format:TextFormat;
-    private var _text_txt:TextField;
+    private var title_text:TextField;
     private var _text_interval:int;
+    
+    private var locked:Boolean = true;
     
     [Embed(source='previewenv.png')]
 		public var sheetClass:Class;
 		public var sheet:Bitmap = new sheetClass();
     
     public function Island():void{
-      start()
-      //var bitmapData:BitmapData = new BitmapData(800, 800, false, 0x88888888);
-      //var bitmap:Bitmap = new Bitmap(bitmapData)
-      //bitmap.blendMode = BlendMode.OVERLAY
-      //addChild(bitmap);
-      //var pic:Bitmap = new Picture();
+      harmony_format = new TextFormat();
+      harmony_format.font = "Harmony";
+      harmony_format.size = 100;
+      
+      title_text = new TextField();
+      title_text.autoSize = TextFieldAutoSize.LEFT;
+      title_text.defaultTextFormat = harmony_format;
+      title_text.text = "Robinson \n Crusoe";
+      title_text.x = 100;
+      title_text.y = 20;
+      title_text.textColor = 0xffffffff;
+      title_text.embedFonts = true
+      title_text.alpha = 2.0
+      addChild(title_text);
+      
+      stage.addEventListener(MouseEvent.CLICK, myClick);
+      stage.addEventListener(KeyboardEvent.KEY_DOWN, keypress);
+      //_text_interval = setInterval(hideIntroText, 50)
     }
     
     public function start():void{
+      if(gameOverText != null && contains(gameOverText)){
+        removeChild(gameOverText)
+      }
       barrel = new Array();
       gameOver = false;
       world_index_x = 145;
       world_index_y = 104;
       moving = false;
-      mode = 'take';
+      mode = 'left';
       daytime = true
       interval = 0;
       world = new World(this);
       world.setup(this);
-      stage.addEventListener(MouseEvent.CLICK, myClick);
-      stage.addEventListener(KeyboardEvent.KEY_DOWN, keypress);
+      player = world.player
       energy = 100;
       maxEnergy = 100;
-      hunger = 0;
+      hunger = 10.0;
+      health = 3.0
       food = 0;
       wood = 0;
       day = 0
+      storage = new Object()
       
       text_format = new TextFormat();
       text_format.font = "Harmony";
       text_format.size = 10;
       
+      health_text = new TextField();
+      setupTextField(health_text)
+      health_text.text = "health:" + health;
+      health_text.x = stage.stageWidth / 2 - health_text.width / 2 - 270;
+      
       hunger_text = new TextField();
+      setupTextField(hunger_text)
       hunger_text.text = "hunger:" + hunger;
-      hunger_text.autoSize = TextFieldAutoSize.LEFT;
-      hunger_text.defaultTextFormat = text_format;
-      hunger_text.embedFonts = true
       hunger_text.x = stage.stageWidth / 2 - hunger_text.width / 2 - 200;
-      hunger_text.y = 20 * 32
-      addChild(hunger_text);
+
       energy_text = new TextField();
+      setupTextField(energy_text)
       energy_text.text = "energy:" + energy;
-      energy_text.autoSize = TextFieldAutoSize.LEFT;
-      energy_text.defaultTextFormat = text_format;
-      energy_text.embedFonts = true
-      energy_text.x = stage.stageWidth / 2 - energy_text.width / 2 - 100;
-      energy_text.y = 20 * 32
-      addChild(energy_text);
+      energy_text.x = stage.stageWidth / 2 - hunger_text.width / 2 - 100;
+      
       wood_text = new TextField();
       wood_text.text = "wood:" + wood;
-      wood_text.autoSize = TextFieldAutoSize.LEFT;
-      wood_text.defaultTextFormat = text_format;
-      wood_text.embedFonts = true
       wood_text.x = stage.stageWidth / 2 - wood_text.width / 2;
-      wood_text.y = 20 * 32
-      addChild(wood_text);
+      setupTextField(wood_text)
+      
       food_text = new TextField();
-      food_text.autoSize = TextFieldAutoSize.LEFT;
-      food_text.defaultTextFormat = text_format;
-      food_text.embedFonts = true
       food_text.x = stage.stageWidth / 2 - food_text.width / 2 + 100;
-      food_text.y = 20 * 32
-      addChild(food_text);
+      setupTextField(food_text)
       food_text.text = "food:" + food;
+      
       darkenInterval = setInterval(darken, 20000);
-      
-      _arial_fmt = new TextFormat();
-      _arial_fmt.font = "Harmony";
-      _arial_fmt.size = 40;
-      
-      _text_txt = new TextField();
-      _text_txt.autoSize = TextFieldAutoSize.LEFT;
-      _text_txt.defaultTextFormat = _arial_fmt;
-      _text_txt.text = "Robinson Crusoe";
-      _text_txt.x = (stage.stageWidth  / 2 - _text_txt.width / 2);
-      _text_txt.y = (stage.stageHeight / 2 - _text_txt.height / 2);
-      _text_txt.textColor = 0xffffffff;
-      _text_txt.embedFonts = true
-      _text_txt.alpha = 2.0
-      addChild(_text_txt);
-      _text_interval = setInterval(hideIntroText, 50)
+    }
+    
+    public function setupTextField(textField:TextField):void {
+      textField.autoSize = TextFieldAutoSize.LEFT;
+      textField.defaultTextFormat = text_format;
+      textField.embedFonts = true
+      textField.y = 20 * 32
+      textField.textColor = 0xffffffff;
+      addChild(textField);
     }
     
     public function hideIntroText():void{
-      _text_txt.alpha -= 0.04
-      if(_text_txt.alpha <= 0){
+      title_text.alpha -= 0.04
+      if(title_text.alpha <= 0){
         clearInterval(_text_interval)
-        removeChild(_text_txt)
+        removeChild(title_text)
       }
     }
     
@@ -163,11 +175,27 @@ package
       }
     }
     
+    public function updateHunger(hungerAddition:Number):void{
+      hunger += hungerAddition
+      hunger_text.text = "hunger:" + hunger;
+    }
+    
+    public function updateHealth(healthAddition:Number):void{
+      health += healthAddition
+      health_text.text = "health:" + health;
+      if(health <= 0){
+        endGame()
+      }
+    }
+    
     public function darken():void{
       world.darken(shade());
-      world.player.darken(shade());
-      updateEnergy(-5)
+      player.darken(shade());
+      if(hunger < 10){
+        updateEnergy(-5)
+      }
       interval += 1;
+      updateHunger(-0.5)
       if(interval % 4 == 0){
         day += 1;
       }
@@ -194,7 +222,7 @@ package
         var currentNeighbors:Array = world.neighbors(currentNode);
         for(var i:int = 0; i < currentNeighbors.length; i++){ 
           var node:Object = currentNeighbors[i];
-          if(node.walkable && closedList.indexOf(node) == -1){
+          if(node.isWalkable() && closedList.indexOf(node) == -1){
             if(openList.indexOf(node) == -1){
               openList.push(node);
               node.parent = currentNode;
@@ -231,9 +259,6 @@ package
           currentNode.parent = null;
           currentNode = parent;
         }
-        //if(currentNode.child){
-        //  recurse(currentNode.x, currentNode.y, graphics, true, this);
-        //}
         var index:int = 0;
         while(currentNode.child){
           setTimeout(world.movePerson, 200 + index * 400, currentNode.x, currentNode.y, true, this);
@@ -255,49 +280,51 @@ package
       return first.F - second.F;
     }
     
-    public function replenishEnergy(node:Object):void{
-      updateEnergy(50);
+    public function replenishEnergy():void{
+      updateEnergy(100);
       food -= 1;
       energy_text.text = "energy:" + energy;
       food_text.text = "food:" + food;
     }
     
     public function take(node:Object):void{
+        trace(node.item)
+        trace(node.item.takeable)
       if(node.item != null && node.item.takeable){
+        moving = true
         //stage.world.items[y + stage.world_index_y][x + stage.world_index_x] = null
-        setTimeout(afterTake, node.delay, node)
+        setTimeout(afterTake, node.item.delay, node)
       }
     }
     
-    public function afterTake(node:Node){
-      world.player.take(node, this);
+    public function afterTake(node:Node):void {
+      player.take(node, this);
       moving = false
       //  moving = true;
       //  openList = new Array();
       //  closedList = new Array();
-      //  path(world.buffer[world.player.y][world.player.x], world.buffer[bed_y][bed_x], replenishEnergy, null);
+      //  path(world.buffer[player.y][player.x], world.buffer[bed_y][bed_x], replenishEnergy, null);
       //}
     }
     
-    public function useItem(node:Object):void{
-      world.player.useItem(node, this)
+    public function useHand(node:Node):void{
+      player.useHand(node, this)
     }
     
     public function endGame():void{
       gameOver = true;
       while (numChildren) removeChildAt(0);
       gameOverText = new TextField();
-      gameOverText.text = "Game over"
-      gameOverText.autoSize = TextFieldAutoSize.LEFT;
+      setupTextField(gameOverText)
       gameOverText.x = stage.stageWidth / 2 
-      gameOverText.y = stage.stageHeight / 2
       clearInterval(world.interval)
       clearInterval(darkenInterval);
       addChild(gameOverText);
+      gameOverText.text = "You have died \n click to shipwreck again"
     }
     
-    public function place(node:Object){
-      world.player.place(node, this);
+    public function place(node:Node):void{
+      player.place(node, this);
       //if(object.requirements_met(this)){
       //object.place(this, world);
       energy_text.text = "energy:" + energy;
@@ -306,39 +333,75 @@ package
       //  moving = true;
       //  openList = new Array();
       //  closedList = new Array();
-      //  path(world.buffer[world.player.y][world.player.x], world.buffer[bed_y][bed_x], replenishEnergy, null);
+      //  path(world.buffer[player.y][player.x], world.buffer[bed_y][bed_x], replenishEnergy, null);
       //}
     }
     
     public function myClick(eventObject:MouseEvent):void {
-      var x:int = Math.floor(eventObject.stageX / 32);
-      var y:int = Math.floor(eventObject.stageY / 32); 
-      if(!moving){
-        var currentPosition:Object = world.buffer[world.player.y][world.player.x];
-        openList = new Array();
-        closedList = new Array();
-        if(world.buffer[y][x].isWalkable() && !world.player.hasInventory()){
-          moving = true;
-          path(currentPosition, world.buffer[y][x], null, null);
-        } else {
-          var target:Object = world.closestNeighbor(world.buffer[y][x]);
-          if(target){
-            if(world.player.hasInventory()){
-              moving = true;
-              if(mode == "take"){
-                path(currentPosition, target, place, world.buffer[y][x]);
-              } else {
-                path(currentPosition, target, useItem, world.buffer[y][x]);
-              }
-            } else if(!world.player.hasInventory()) {
-              moving = true;
-              if(mode == "take"){
-                path(currentPosition, target, take, world.buffer[y][x]);
-              } else {
-                path(currentPosition, target, useItem, world.buffer[y][x]);
+      if(gameOver){
+        start()
+        return
+      }
+      var x:int
+      var y:int
+      if(craftScreen == null){
+        x = Math.floor(eventObject.stageX / 32)
+        y = Math.floor(eventObject.stageY / 32)
+        if(!moving){
+          var currentPosition:Object = world.buffer[player.y][player.x];
+          openList = new Array();
+          closedList = new Array();
+          if(world.buffer[y][x].isWalkable() && !player.handFull()){
+            moving = true;
+            path(currentPosition, world.buffer[y][x], null, null);
+          } else {
+            var target:Object = world.closestNeighbor(world.buffer[y][x]);
+            if(target != null){
+              if(player.handFull()){
+                moving = true;
+                if(target.item == null){
+                  if(player.bothHandsFull()){
+                    path(currentPosition, target, place, world.buffer[y][x]);
+                  } else if(player.currentHand() != null && player.currentHand().equipable) {
+                    path(currentPosition, target, useHand, world.buffer[y][x]);
+                  } else {
+                    path(currentPosition, target, place, world.buffer[y][x]);
+                  }
+                } else {
+                  path(currentPosition, target, useHand, world.buffer[y][x]);
+                }
+              } else if(!player.handFull()) {
+                moving = true;
+                //if(target.item != null){
+                  path(currentPosition, target, take, world.buffer[y][x]);
+                //} else {
+                  //path(currentPosition, target, useHand, world.buffer[y][x]);
+                //}
               }
             }
           }
+        }
+      } else {
+        x = Math.floor((eventObject.stageX - craftScreen.startX - 16) / 48)
+        y = Math.floor((eventObject.stageY - craftScreen.startY - 16) / 48)
+        if(craftScreen.slot == x){
+          var klass:Class = craftScreen.getOption()
+          var object:Item = new klass(null)
+          if(wood >= object.wood){
+            //player.switchInventory()
+            player.addToInventory(object, this)
+            wood -= object.wood
+            wood_text.text = "wood:" + wood;
+          }
+          craftScreen.dispose(this)
+          craftScreen = null
+          moving = false
+        } else if(y == 0) {
+          craftScreen.highlightSlot(x)
+        } else {
+          craftScreen.dispose(this)
+          craftScreen = null
+          moving = false
         }
       }
     }
@@ -347,54 +410,48 @@ package
       var keyPressed:int;
       keyPressed = keyEvent.keyCode;
       trace(keyPressed);
-      if(keyPressed == 49){
-        
-          mode = 'take';
-          trace("take")
+      if(keyPressed == 9){
+        player.switchInventory()
       } else if(keyPressed == 50){
-                mode = 'use';
-                trace("use")
-      } else if(keyPressed == 9){
-        if(mode == 'use'){
-          mode = 'take'
-        } else if (mode == 'take'){
-          mode = 'use'
+        if(craftScreen == null && !player.hasInventory()){
+          craftScreen = new CraftScreen(this)
+          moving = true
+        } else if(craftScreen != null) {
+          craftScreen.dispose(this)
+          craftScreen = null
+          moving = false
         }
-        world.player.switchInventory()
-      }else if(keyPressed == 51){
-        trace(numChildren)
-        //world.player.clearInventory();
-        //world.player.addToInventory(new Log(null), this);
       } else if(keyPressed == 32){
-        //var item:Item = world.player.clearInventory();
+        //var item:Item = player.clearInventory();
         if(gameOver){
           start()
+        } else {
+          player.useHand(null, this);
+          energy_text.text = "energy:" + energy;
         }
-        world.player.useItem(null, this);
-        energy_text.text = "energy:" + energy;
       } else if(keyPressed == 52){
         if(!gameOver){
           endGame()
         }
       } else if(keyPressed == 53){
-        world.player.clearInventory(this);
-        world.player.addToInventory(new Barrel(null), this);
+        player.clearInventory(this);
+        player.addToInventory(new Barrel(null), this);
       } else if(keyPressed == 87){ //up
-        world.movePerson(world.player.x, world.player.y - 1, true, this, false)
+        world.movePerson(player.x, player.y - 1, true, this, false)
        } else if(keyPressed == 83 || keyPressed == 40){ //down
-        world.movePerson(world.player.x, world.player.y + 1, true, this, false)
+        world.movePerson(player.x, player.y + 1, true, this, false)
        } else if(keyPressed == 65){ //left
-        world.movePerson(world.player.x - 1, world.player.y, true, this, false)
+        world.movePerson(player.x - 1, player.y, true, this, false)
       } else if(keyPressed == 68){ //right
-        world.movePerson(world.player.x + 1, world.player.y, true, this, false)
+        world.movePerson(player.x + 1, player.y, true, this, false)
       } else if(keyPressed == 81){ //up + left
-        world.movePerson(world.player.x - 1, world.player.y - 1, true, this, false)
+        world.movePerson(player.x - 1, player.y - 1, true, this, false)
       } else if(keyPressed == 69){ //up + right
-        world.movePerson(world.player.x + 1, world.player.y - 1, true, this, false)
+        world.movePerson(player.x + 1, player.y - 1, true, this, false)
       } else if(keyPressed == 90){ //down + left
-        world.movePerson(world.player.x - 1, world.player.y + 1, true, this, false)
+        world.movePerson(player.x - 1, player.y + 1, true, this, false)
       } else if(keyPressed == 67){ //down + right
-        world.movePerson(world.player.x + 1, world.player.y + 1, true, this, false)
+        world.movePerson(player.x + 1, player.y + 1, true, this, false)
       }
     }
   }

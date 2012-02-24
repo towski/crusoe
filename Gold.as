@@ -4,6 +4,13 @@ package{
       super(related_node, true)
       tile = 23;
       itemSheet = new itemSheetClass()
+      takeable = true
+      //emptyTile = 1
     } 
+    
+    override public function take(stage:Object, world:World):Item{
+      world.player.addToInventory(this, stage)
+      return null;
+    }
   }
 }

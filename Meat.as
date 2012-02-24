@@ -15,8 +15,8 @@ package{
       return null;
     }
     
-    override public function useItem(stage:Object):Boolean{
-      stage.updateEnergy(50);
+    override public function useItem(stage:Object, used:Item):Boolean{
+      stage.updateHunger(2.0);
       stage.world.player.clearInventory(stage)
       return true;
     }

@@ -10,14 +10,15 @@ package{
     public var animals:Array;
     public var items:Array;
     public var terrain:Array;
-    public var player:Object;
+    public var player:Player;
     public var breakGround:Boolean;
     public var derail:Boolean = false;
     public var map:Array;
     public var cumulative_x:int;
     public var cumulative_y:int;
     public var interval:Number;
-    public function World(stage:Object) {
+    public var stage:Object;
+    public function World(myStage:Object) {
       breakGround = true;
       world = new Array()
       buffer = new Array();
@@ -25,9 +26,10 @@ package{
       animals = new Array();
       cumulative_x = 0;
       cumulative_y = 0;
+      stage = myStage
     }
     
-    public function setup(stage:Object) {
+    public function setup(stage:Object):void {
       var mapObject:Map = new Map();
       map = mapObject.toString().split(/\n/);
       
@@ -43,6 +45,8 @@ package{
             klass = Water;
           } else if (char == '.'){
             klass = Sand;
+          } else if (char == ':'){
+            klass = Desert;
           } else if (char == 'V'){
             klass = Cliff;
           } else if (char == 'v'){
@@ -51,7 +55,7 @@ package{
             klass = Mud;
           } else if (char == 'f'){
             klass = ForestGround;
-            var random:int = Math.floor(Math.random() * 201);
+            random = Math.floor(Math.random() * 201);
             if(random < 1){
               items[y][x] = Mushroom
             } else if(random < 3){
@@ -64,12 +68,24 @@ package{
           } else if (char == 'T'){
             klass = Mud;
             items[y][x] = Sword
+          } else if (char == 'a'){
+            klass = Mud;
+            items[y][x] = Axe
           } else if (char == 't'){
-            klass = Sand;
+            klass = Ground;
             items[y][x] = Table
+          } else if (char == 'o'){
+            klass = Sand;
+            items[y][x] = Gold
           } else if (char == 'd'){
             klass = Sand;
             items[y][x] = Skull
+          } else if (char == 'B'){
+            klass = Sand;
+            items[y][x] = Barrel
+          } else if (char == 'r'){
+            klass = Sand;
+            items[y][x] = Rum
           } else if (char == 'X'){
             klass = Ground;
             stage.world_index_y = y
@@ -77,15 +93,22 @@ package{
           } else if (char == 'G'){
             items[y][x] = Goat
             animals.push(new Animal(Goat, x, y))
+          } else if (char == 'C'){
+            klass = Mud;
+            items[y][x] = Cannibal
+            animals.push(new Animal(Cannibal, x, y))
           } else if (char == 'S'){
             items[y][x] = SheGoat
             animals.push(new Animal(SheGoat, x, y))
+          } else if (char == 'F'){
+            items[y][x] = Fowl
+            animals.push(new Animal(Fowl, x, y))
           } else if (char == 's'){
             items[y][x] = SheKid
             animals.push(new Animal(SheKid, x, y))          
           } else {
             klass = Ground;
-            var random:int = Math.floor(Math.random() * 201);
+            random = Math.floor(Math.random() * 201);
             if(random < 1){
               items[y][x] = Mushroom
             } else if(random < 3){
@@ -100,19 +123,15 @@ package{
         }
       }
       
-      items[stage.world_index_y + 9][stage.world_index_x + 9] = Barrel
-      items[stage.world_index_y + 9][stage.world_index_x + 10] = Rum
-      
       items[stage.world_index_y + 10][stage.world_index_x + 10] = null
-      
       
       for(var i:int = 0; i < 20 ;i++){ 
         buffer.push(new Array());
         for(var j:int = 0; j < 20; j++){ 
-          var y:int = i + stage.world_index_y;
-          var x:int = j + stage.world_index_x;
-          var object:Object = new world[y][x](j, i, stage, this);
-          buffer[i][j] = object;
+          y = i + stage.world_index_y
+          x = j + stage.world_index_x
+          var object:Object = new world[y][x](j, i, stage, this)
+          buffer[i][j] = object
         }
       }
       
@@ -121,23 +140,46 @@ package{
       interval = setInterval(move, 1000, items, stage)
     }
     
+    public function playerNeighbor(animal:Animal):Boolean {
+      var distance:Number = Math.sqrt((Math.pow(animal.y - (stage.world_index_y + 10), 2) + Math.pow(animal.x - (stage.world_index_x + 10), 2)))
+      return distance <= Math.sqrt(2)
+    }
+    
+    public function lineOfSight(animal:Animal):Boolean {
+      if(animal.y == (stage.world_index_y + 10)){
+        
+      } else if (animal.x == (stage.world_index_x + 10)){
+      }
+      return false
+    }
+    
     public function move(items:Array, stage:Object):void{
       for(var i:int = 0; i < animals.length; i++){
         var animal:Animal = animals[i];
         var random:int = Math.floor(Math.random() * animal.moveChances());
         if(random < 1){
-          var results:Array = globalNeighbors(animal.x, animal.y, items)
-          random = Math.floor(Math.random() * results.length);
-          var oldNode:Node
-          if(onMap(animal.x, animal.y, stage)){
-            oldNode = buffer[animal.y - stage.world_index_y][animal.x - stage.world_index_x]
+          var newY:int
+          var newX:int
+          if(animal.attacked && playerNeighbor(animal)){
+            newY = stage.world_index_y + player.y
+            newX = stage.world_index_x + player.x
+          } else if(animal.attacked && onMap(animal.x, animal.y, stage) && lineOfSight(animal)){
+            newY = animal.y + 1
+            newX = animal.x + 1
+          } else {
+            var results:Array = globalNeighbors(animal.x, animal.y, items)
+            random = Math.floor(Math.random() * results.length);
+            var oldNode:Node = null
+            if(onMap(animal.x, animal.y, stage)){
+              oldNode = buffer[animal.y - stage.world_index_y][animal.x - stage.world_index_x]
+            }
+            newY = results[random][0][0]
+            newX = results[random][0][1]
           }
-          var newY:int = results[random][0][0]
-          var newX:int = results[random][0][1]
           if(onMap(newX, newY, stage)){
             var node:Node = buffer[newY - stage.world_index_y][newX - stage.world_index_x]
             var playerIntersect:Boolean = (player.x + stage.world_index_x) == newX && (player.y + stage.world_index_y) == newY
-            if(node.walkable && !playerIntersect){
+            if(node.isWalkable() && !playerIntersect){
               items[animal.y][animal.x] = null
               animal.x = newX;
               animal.y = newY;
@@ -146,12 +188,14 @@ package{
                 oldNode.removeItem(stage)
               }
               node.addItem(animal.newAnimal(node), stage)
+            } else if(playerIntersect) {
+              stage.updateHealth(-0.5)
             }
           } else {
-            if(items[newY][newX] == null){
+            if(items[newY][newX] == null && world[newY][newX] != Cliff){
               items[animal.y][animal.x] = null
-              animal.x = newX;
-              animal.y = newY;
+              animal.x = newX
+              animal.y = newY
               items[newY][newX] = animal.animalClass
               if(oldNode != null){
                 oldNode.removeItem(stage)
@@ -229,8 +273,8 @@ package{
     public function closestNeighbor(obj:Object):Node{
       var results:Array = new Array();
       results = neighbors(obj)
-      var shortestDistance:int = 10000;
-      var distance:int;
+      var shortestDistance:Number = 10000;
+      var distance:Number;
       var target:Node;
       for(var i:int = 0; i < results.length; i++){
         distance = Math.sqrt((Math.pow(results[i].y - player.y, 2) + Math.pow(results[i].x - player.x, 2)))
@@ -242,7 +286,7 @@ package{
       return target;
     }
     
-    public function finishMoving(stage):void{
+    public function finishMoving(stage:Object):void{
       if(!stage.moving){
         player.sprite.drawTile(493);
         cumulative_x = 0;
@@ -294,8 +338,8 @@ package{
         object.groundSprite.canvasBitmapData.dispose();
         stage.removeChild(object.groundSprite);
         if(object.sprite != null && object.sprite != object.groundSprite){
-          object.sprite.canvasBitmapData.dispose();
-          stage.removeChild(object.sprite);
+          object.sprite.canvasBitmapData.dispose()
+          stage.removeChild(object.sprite)
           object.sprite = null
         }
         object.groundSprite = null
@@ -313,7 +357,7 @@ package{
         //}
       }
       for(var y:int = 0; y < 20; y++){
-        for(var x:int = 0; x < 20; x++){
+        for(x = 0; x < 20; x++){
           buffer[y][x].update(x,y);
         }
       }
@@ -391,7 +435,7 @@ package{
       if (!setMoving){
         setTimeout(finishMoving, 500, stage);
       }
-      if(localItem(x,y, stage) == null && !derail){
+      if((localItem(x,y, stage) == null || localItem(x,y, stage).walkable) && !derail){
         if(follow){
           if (x + cumulative_x > player.x){
             player.sprite.drawTile(492);
@@ -420,7 +464,7 @@ package{
           stage.addChild(player.sprite);
         } else if(!stage.moving){
           var node:Node = buffer[y][x]
-          if(node.walkable){
+          if(node.isWalkable()){
             if (x > player.x){
               player.sprite.drawTile(492);
               moveCameraRight(stage, false);

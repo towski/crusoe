@@ -6,6 +6,7 @@ package{
       itemSheet = new itemSheetClass()
       useable = true
       takeable = true
+      wood = 2
     } 
     
     override public function take(stage:Object, world:World):Item{
@@ -14,8 +15,7 @@ package{
       return null
     }
     
-    override public function useItem(stage:Object):Boolean{
-      trace("using barrel")
+    override public function useItem(stage:Object, used:Item):Boolean{
       if(stage.barrel.length > 0 && !stage.world.player.hasInventory()){
         stage.world.player.addToInventory(stage.barrel.pop(), stage)
       }

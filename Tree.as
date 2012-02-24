@@ -4,13 +4,13 @@ package{
     public function Tree(related_node:Node) {
       super(related_node)
       tile = 73
-      delay = 10000
+      delay = 4500
+      useable = true
+      takeable = false
     }
     
     override public function take(stage:Object, world:World):Item{
-//      super.take(stage, world, closure);
-      stage.updateEnergy(-4);
-      return new Log(node)
+      return null
     }
   }
 }
