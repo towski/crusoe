@@ -13,6 +13,7 @@ package{
 		  useable = true
 		  takeable = false
 		  deadAnimalClass = DeadSheGoat
+		  health = 3
     }
     
     override public function useItem(stage:Object, used:Item):Boolean{

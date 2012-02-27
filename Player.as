@@ -128,13 +128,18 @@ package{
     public function place(node:Node, stage:Object):void{
       if(node.item == null){
         if(hand == "left"){
-          node.addItem(new inventoryClass(node), stage);
-          clearInventory(stage)
+          if(node.isWalkable()){
+            node.addItem(new inventoryClass(node), stage);
+            clearInventory(stage)
+            node.place(stage)
+          }
         } else {
-          node.addItem(new equipmentClass(node), stage);
-          clearInventory(stage)
+          if(node.isWalkable()){
+            node.addItem(new equipmentClass(node), stage);
+            clearInventory(stage)
+            node.place(stage)
+          }
         }
-        node.place(stage)
       } else {
         var inventoryName:String = handItemName()
         var nodeItemName:String = flash.utils.getQualifiedClassName(node.item)

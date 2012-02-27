@@ -17,6 +17,7 @@ package{
     public var cumulative_x:int;
     public var cumulative_y:int;
     public var interval:Number;
+    public var finishInterval:int;
     public var stage:Object;
     public function World(myStage:Object) {
       breakGround = true;
@@ -321,6 +322,7 @@ package{
         cumulative_y = 0;
         player.darken(stage.shadeFromBase())
       }
+      finishInterval = 0
     }
     
     public function darken(shade:Number):void{
@@ -482,7 +484,10 @@ package{
     
     public function movePerson(x:int, y:int, setMoving:Boolean, stage:Object, follow:Boolean = true):void{
       if (!setMoving){
-        setTimeout(finishMoving, 500, stage);
+        if(finishInterval != 0){
+          clearInterval(finishInterval)
+        }
+        finishInterval = setTimeout(finishMoving, 500, stage)
       }
       if((localItem(x,y, stage) == null || localItem(x,y, stage).walkable) && !derail){
         if(follow){
@@ -516,15 +521,6 @@ package{
           var node:Node = buffer[y][x]
           if(node.isWalkable()){
             var moved:Boolean = false
-            if (x > player.x){
-              player.drawTile(492);
-              moveCameraRight(stage, false);
-              moved = true
-            } else if (x < player.x){
-              player.drawTile(494);
-              moveCameraLeft(stage, false);
-              moved = true
-            } 
             if (y < player.y){
               player.drawTile(495);
               moveCameraUp(stage, false);
@@ -534,6 +530,15 @@ package{
               moveCameraDown(stage, false);
               moved = true
             }
+            if (x > player.x){
+              player.drawTile(492);
+              moveCameraRight(stage, false);
+              moved = true
+            } else if (x < player.x){
+              player.drawTile(494);
+              moveCameraLeft(stage, false);
+              moved = true
+            } 
             if(moved){
               player.darken(stage.shadeFromBase())
             }

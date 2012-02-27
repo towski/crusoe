@@ -15,7 +15,9 @@ package{
     
     override public function useItem(stage:Object, used:Item):Boolean{
       stage.replenishEnergy()
+      stage.clearLightInterval()
       stage.darken()
+      stage.setLightInterval()
       return false
     }
   }

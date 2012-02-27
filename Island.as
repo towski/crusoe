@@ -146,8 +146,15 @@ package
       food_text.x = stage.stageWidth / 2 - food_text.width / 2 + 100;
       setupTextField(food_text)
       food_text.text = "food:" + food;
-      
+      setLightInterval()
+    }
+    
+    public function setLightInterval():void {
       darkenInterval = setInterval(darken, 20000);
+    }
+    
+    public function clearLightInterval():void {
+      clearInterval(darkenInterval)
     }
     
     public function setupTextField(textField:TextField):void {
@@ -457,21 +464,21 @@ package
         player.clearInventory(this);
         player.addToInventory(new Barrel(null), this);
       } else if(keyPressed == 87){ //up
-        world.movePerson(player.x, player.y - 1, true, this, false)
+        world.movePerson(player.x, player.y - 1, false, this, false)
        } else if(keyPressed == 83 || keyPressed == 40){ //down
-        world.movePerson(player.x, player.y + 1, true, this, false)
+        world.movePerson(player.x, player.y + 1, false, this, false)
        } else if(keyPressed == 65){ //left
-        world.movePerson(player.x - 1, player.y, true, this, false)
+        world.movePerson(player.x - 1, player.y, false, this, false)
       } else if(keyPressed == 68){ //right
-        world.movePerson(player.x + 1, player.y, true, this, false)
+        world.movePerson(player.x + 1, player.y, false, this, false)
       } else if(keyPressed == 81){ //up + left
-        world.movePerson(player.x - 1, player.y - 1, true, this, false)
+        world.movePerson(player.x - 1, player.y - 1, false, this, false)
       } else if(keyPressed == 69){ //up + right
-        world.movePerson(player.x + 1, player.y - 1, true, this, false)
+        world.movePerson(player.x + 1, player.y - 1, false, this, false)
       } else if(keyPressed == 90){ //down + left
-        world.movePerson(player.x - 1, player.y + 1, true, this, false)
+        world.movePerson(player.x - 1, player.y + 1, false, this, false)
       } else if(keyPressed == 67){ //down + right
-        world.movePerson(player.x + 1, player.y + 1, true, this, false)
+        world.movePerson(player.x + 1, player.y + 1, false, this, false)
       }
     }
   }
