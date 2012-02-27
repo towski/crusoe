@@ -22,6 +22,8 @@ package
     private var movieClip:Sprite;
     public var energy:int;
     public var maxEnergy:int;
+    public var maxHunger:int;
+    public var maxHealth:int;
     public var wood:int;
     public var food:int;
     public var hunger:Number;
@@ -78,8 +80,8 @@ package
       title_text.autoSize = TextFieldAutoSize.LEFT;
       title_text.defaultTextFormat = harmony_format;
       title_text.text = "Robinson \n Crusoe";
-      title_text.x = 100;
-      title_text.y = 20;
+      title_text.x = 50;
+      title_text.y = 100;
       title_text.textColor = 0xffffffff;
       title_text.embedFonts = true
       title_text.alpha = 2.0
@@ -107,6 +109,8 @@ package
       player = world.player
       energy = 100;
       maxEnergy = 100;
+      maxHealth = 3;
+      maxHunger = 10
       hunger = 10.0;
       health = 3.0
       food = 0;
@@ -163,25 +167,38 @@ package
       }
     }
     
-    public function updateEnergy(energyAddition:int):void{
-      if(energy + energyAddition < maxEnergy){
-        energy += energyAddition;
-      } else {
+    public function updateEnergy(energyAddition:int):Boolean{
+      var newEnergy:int = energy + energyAddition
+      if(newEnergy > maxEnergy){
         energy = maxEnergy
-      }
-      energy_text.text = "energy:" + energy;
-      if(energy <= 0){
-        endGame()
+        return true
+      } else if(newEnergy >= 0) {
+        energy += energyAddition;
+        energy_text.text = "energy:" + energy;
+        return true
+      } else {
+        return false
       }
     }
     
     public function updateHunger(hungerAddition:Number):void{
-      hunger += hungerAddition
+      if(hunger + hungerAddition < maxHunger){
+        hunger += hungerAddition
+      } else {
+        hunger = maxHunger
+      }
+      if(hunger < 0){
+        hunger = 0
+      }
       hunger_text.text = "hunger:" + hunger;
     }
     
     public function updateHealth(healthAddition:Number):void{
-      health += healthAddition
+      if(health + healthAddition < maxHealth){
+        health += healthAddition
+      } else {
+        health = maxHealth
+      }
       health_text.text = "health:" + health;
       if(health <= 0){
         endGame()
@@ -191,8 +208,8 @@ package
     public function darken():void{
       world.darken(shade());
       player.darken(shade());
-      if(hunger < 10){
-        updateEnergy(-5)
+      if(hunger <= 0){
+        updateHealth(-0.5)
       }
       interval += 1;
       updateHunger(-0.5)
@@ -282,14 +299,13 @@ package
     
     public function replenishEnergy():void{
       updateEnergy(100);
-      food -= 1;
+      if(hunger > 0){
+        updateHealth(1)
+      }
       energy_text.text = "energy:" + energy;
-      food_text.text = "food:" + food;
     }
     
     public function take(node:Object):void{
-        trace(node.item)
-        trace(node.item.takeable)
       if(node.item != null && node.item.takeable){
         moving = true
         //stage.world.items[y + stage.world_index_y][x + stage.world_index_x] = null
@@ -355,11 +371,12 @@ package
             moving = true;
             path(currentPosition, world.buffer[y][x], null, null);
           } else {
+            var targetItem:Item = world.buffer[y][x].item
             var target:Object = world.closestNeighbor(world.buffer[y][x]);
             if(target != null){
               if(player.handFull()){
                 moving = true;
-                if(target.item == null){
+                if(targetItem == null){
                   if(player.bothHandsFull()){
                     path(currentPosition, target, place, world.buffer[y][x]);
                   } else if(player.currentHand() != null && player.currentHand().equipable) {
@@ -370,7 +387,7 @@ package
                 } else {
                   path(currentPosition, target, useHand, world.buffer[y][x]);
                 }
-              } else if(!player.handFull()) {
+              } else {
                 moving = true;
                 //if(target.item != null){
                   path(currentPosition, target, take, world.buffer[y][x]);
@@ -389,9 +406,11 @@ package
           var object:Item = new klass(null)
           if(wood >= object.wood){
             //player.switchInventory()
-            player.addToInventory(object, this)
-            wood -= object.wood
-            wood_text.text = "wood:" + wood;
+            if(updateEnergy(-object.energyCost)){
+              player.addToInventory(object, this)
+              wood -= object.wood
+              wood_text.text = "wood:" + wood;
+            }
           }
           craftScreen.dispose(this)
           craftScreen = null
@@ -413,14 +432,14 @@ package
       if(keyPressed == 9){
         player.switchInventory()
       } else if(keyPressed == 50){
-        if(craftScreen == null && !player.hasInventory()){
-          craftScreen = new CraftScreen(this)
-          moving = true
-        } else if(craftScreen != null) {
-          craftScreen.dispose(this)
-          craftScreen = null
-          moving = false
-        }
+        //if(craftScreen == null && !player.hasInventory()){
+        //  craftScreen = new CraftScreen(this)
+        //  moving = true
+        //} else if(craftScreen != null) {
+        //  craftScreen.dispose(this)
+        //  craftScreen = null
+        //  moving = false
+        //}
       } else if(keyPressed == 32){
         //var item:Item = player.clearInventory();
         if(gameOver){
@@ -430,9 +449,10 @@ package
           energy_text.text = "energy:" + energy;
         }
       } else if(keyPressed == 52){
-        if(!gameOver){
-          endGame()
-        }
+        player.hit()
+        //if(!gameOver){
+        //  endGame()
+        //}
       } else if(keyPressed == 53){
         player.clearInventory(this);
         player.addToInventory(new Barrel(null), this);

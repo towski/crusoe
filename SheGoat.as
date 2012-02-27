@@ -5,13 +5,14 @@ package{
     public function SheGoat(related_node:Node) {
       super(related_node, true)
       tile = 218;
-      itemSheet = new charSheetClass()
+      sheetClass = charSheetClass
       emptyTile = 461
 		  scaleX = 4
 		  scaleY = 4
 		  bits = 8
 		  useable = true
 		  takeable = false
+		  deadAnimalClass = DeadSheGoat
     }
     
     override public function useItem(stage:Object, used:Item):Boolean{
@@ -27,8 +28,13 @@ package{
       return false
     }
     
-    override public function place(stage:Object, x:int, y:int):void{
-      stage.world.animals.push(new Animal(SheGoat, stage.world_index_x + x, stage.world_index_y + y))
+    override public function move(stage:Object):void{
+      var random:int = Math.floor(Math.random() * 600);
+      if(random < 1){
+        stage.world.animals.push(new Animal(SheKid, animal.x, animal.y, node))
+      } else if(random < 2){
+        stage.world.animals.push(new Animal(Kid, animal.x, animal.y, node))
+      }
     }
   }
 }

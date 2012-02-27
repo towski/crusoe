@@ -5,6 +5,7 @@ package{
       tile = 140;
       useable = true
       wood = 2
+      energyCost = 10
     } 
     
     override public function take(stage:Object, world:World):Item{

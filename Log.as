@@ -1,4 +1,6 @@
 package{
+  import flash.utils.getQualifiedClassName
+  
   public class Log extends Item{
     
     public function Log(related_node:Node) {
@@ -17,7 +19,12 @@ package{
     }
     
     override public function useItem(stage:Object, used:Item):Boolean{
-      trace('loggy')
+      var usedName:String = flash.utils.getQualifiedClassName(used)
+      if(usedName == "Table"){
+        stage.wood += 1
+        stage.player.clearInventory(stage)
+        stage.wood_text.text = "wood:" + stage.wood;
+      }
       return false
     }
   }

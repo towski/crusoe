@@ -3,7 +3,7 @@ package{
     public function Skull(related_node:Node) {
       super(related_node, true)
       tile = 11;
-      itemSheet = new piratesSheetClass()
+      sheetClass = piratesSheetClass
       emptyTile = 24
     } 
     

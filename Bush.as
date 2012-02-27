@@ -9,13 +9,15 @@ package{
     
     override public function take(stage:Object, world:World):Item{
       super.take(stage, world);
-      stage.updateEnergy(-2);
-      var random:int = Math.floor(Math.random() * 101);
-      if(random < 40){
-        return new Grapes(node);
-      } else {
-        return null;
+      if(stage.updateEnergy(-2)){
+        var random:int = Math.floor(Math.random() * 101);
+        if(random < 40){
+          return new Grapes(node);
+        } else {
+          return null;
+        }
       }
+      return null
     }
   }
 }

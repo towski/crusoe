@@ -7,8 +7,9 @@ package{
     }
     
     override public function take(stage:Object, world:World):Item{
-      stage.updateEnergy(-10);
-      world.player.addToInventory(this, stage)
+      if(stage.updateEnergy(-10)){
+        world.player.addToInventory(this, stage)
+      }
       return null;
     }
   }

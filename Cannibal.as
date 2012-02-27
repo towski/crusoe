@@ -5,11 +5,14 @@ package{
     public function Cannibal(related_node:Node) {
       super(related_node, true)
       tile = 36;
-      itemSheet = new piratesSheetClass()
+      sheetClass = piratesSheetClass
       emptyTile = 26
 		  useable = true
 		  takeable = false
 		  attacked = true
+		  health = 5
+		  attackSkill = 25
+		  deadAnimalClass = Skull
     }
     
     override public function useItem(stage:Object, used:Item):Boolean{
@@ -17,16 +20,9 @@ package{
         animal.attacked = true
       }
       stage.updateEnergy(-10);
-      var random:int = Math.floor(Math.random() * 3);
-      if(random < 1){
-        removeAnimal(stage)
-        node.addItem(new Meat(node), stage);
-      }
+      removeAnimal(stage)
+      rotation = 45
       return false
-    }
-    
-    override public function place(stage:Object, x:int, y:int):void{
-      stage.world.animals.push(new Animal(Fowl, stage.world_index_x + x, stage.world_index_y + y))
     }
   }
 }

@@ -80,6 +80,9 @@ package{
           } else if (char == 'd'){
             klass = Sand;
             items[y][x] = Skull
+          } else if (char == 'D'){
+            klass = Mud;
+            items[y][x] = Bed
           } else if (char == 'B'){
             klass = Sand;
             items[y][x] = Barrel
@@ -92,29 +95,39 @@ package{
             stage.world_index_x = x
           } else if (char == 'G'){
             items[y][x] = Goat
-            animals.push(new Animal(Goat, x, y))
+            animals.push(new Animal(Goat, x, y, null))
           } else if (char == 'C'){
             klass = Mud;
             items[y][x] = Cannibal
-            animals.push(new Animal(Cannibal, x, y))
+            animals.push(new Animal(Cannibal, x, y, null))
           } else if (char == 'S'){
             items[y][x] = SheGoat
-            animals.push(new Animal(SheGoat, x, y))
+            animals.push(new Animal(SheGoat, x, y, null))
+          } else if (char == 'M'){
+            items[y][x] = Monkey
+            animals.push(new Animal(Monkey, x, y, null))
           } else if (char == 'F'){
             items[y][x] = Fowl
-            animals.push(new Animal(Fowl, x, y))
+            animals.push(new Animal(Fowl, x, y, null))
           } else if (char == 's'){
             items[y][x] = SheKid
-            animals.push(new Animal(SheKid, x, y))          
+            animals.push(new Animal(SheKid, x, y, null))          
           } else {
-            klass = Ground;
+            random = Math.floor(Math.random() * 201);
+            klass = Ground
             random = Math.floor(Math.random() * 201);
             if(random < 1){
               items[y][x] = Mushroom
             } else if(random < 3){
               items[y][x] = Rock
+            } else if(random < 4) {
+              klass = RedFlowerGround
+            } else if(random < 5) {
+              klass = WhiteFlowerGround
             } else if(random < 32){
               items[y][x] = Tree
+            } else if(random < 34){
+              items[y][x] = GoldTree
             } else if(random < 90){
               items[y][x] = Bush
             }
@@ -156,52 +169,67 @@ package{
     public function move(items:Array, stage:Object):void{
       for(var i:int = 0; i < animals.length; i++){
         var animal:Animal = animals[i];
+        var backtrace:String;
         var random:int = Math.floor(Math.random() * animal.moveChances());
         if(random < 1){
           var newY:int
           var newX:int
-          if(animal.attacked && playerNeighbor(animal)){
-            newY = stage.world_index_y + player.y
-            newX = stage.world_index_x + player.x
-          } else if(animal.attacked && onMap(animal.x, animal.y, stage) && lineOfSight(animal)){
-            newY = animal.y + 1
-            newX = animal.x + 1
-          } else {
-            var results:Array = globalNeighbors(animal.x, animal.y, items)
-            random = Math.floor(Math.random() * results.length);
+          try {
             var oldNode:Node = null
             if(onMap(animal.x, animal.y, stage)){
               oldNode = buffer[animal.y - stage.world_index_y][animal.x - stage.world_index_x]
             }
-            newY = results[random][0][0]
-            newX = results[random][0][1]
-          }
-          if(onMap(newX, newY, stage)){
-            var node:Node = buffer[newY - stage.world_index_y][newX - stage.world_index_x]
-            var playerIntersect:Boolean = (player.x + stage.world_index_x) == newX && (player.y + stage.world_index_y) == newY
-            if(node.isWalkable() && !playerIntersect){
-              items[animal.y][animal.x] = null
-              animal.x = newX;
-              animal.y = newY;
-              items[animal.y][animal.x] = animal.animalClass
-              if(oldNode != null){
-                oldNode.removeItem(stage)
-              }
-              node.addItem(animal.newAnimal(node), stage)
-            } else if(playerIntersect) {
-              stage.updateHealth(-0.5)
+            if(animal.attacked && playerNeighbor(animal)){
+              newY = stage.world_index_y + player.y
+              newX = stage.world_index_x + player.x
+            } else {
+              var results:Array = globalNeighbors(animal.x, animal.y, items)
+              random = Math.floor(Math.random() * results.length);
+
+              newY = results[random][0][0]
+              newX = results[random][0][1]
             }
-          } else {
-            if(items[newY][newX] == null && world[newY][newX] != Cliff){
-              items[animal.y][animal.x] = null
-              animal.x = newX
-              animal.y = newY
-              items[newY][newX] = animal.animalClass
-              if(oldNode != null){
-                oldNode.removeItem(stage)
+            if(onMap(newX, newY, stage)){
+              var node:Node = buffer[newY - stage.world_index_y][newX - stage.world_index_x]
+              var playerIntersect:Boolean = (player.x + stage.world_index_x) == newX && (player.y + stage.world_index_y) == newY
+              if(node.isWalkable() && !playerIntersect){
+                items[animal.y][animal.x] = null
+                animal.x = newX;
+                animal.y = newY;
+                items[animal.y][animal.x] = animal.animalClass
+                if(oldNode != null){
+                  oldNode.removeItem(stage)
+                }
+                node.addItem(animal.animal, stage)
+              } else if(animal.attacked && playerIntersect) {
+                animal.animal.node = oldNode
+                var random:int = Math.floor(Math.random() * 100)
+                if(random < 50 + animal.animal.attackSkill){
+                  player.hit()
+                  stage.updateHealth(-0.5)
+                }
+                if(player.handItemName() == "Sword"){
+                  player.useItem(animal.animal.node, stage)
+                }
               }
-            } 
+            } else {
+              if(items[newY][newX] == null && world[newY][newX] != Cliff && world[newY][newX] != Water){
+                items[animal.y][animal.x] = null
+                animal.x = newX
+                animal.y = newY
+                items[newY][newX] = animal.animalClass
+                if(oldNode != null){
+                  oldNode.removeItem(stage)
+                }
+              } 
+            }
+          } catch(e:Error){
+            //trace(e)
+            trace(animal.animal)
+            trace(backtrace)
+            throw(e)
           }
+          animal.move(stage)
         }
       }
     }
@@ -291,6 +319,7 @@ package{
         player.sprite.drawTile(493);
         cumulative_x = 0;
         cumulative_y = 0;
+        player.darken(stage.shadeFromBase())
       }
     }
     
@@ -312,6 +341,11 @@ package{
            object.sprite.canvasBitmapData.dispose();
            stage.removeChild(object.sprite);
            object.sprite = null
+         }
+         if(object.flower != null){
+           object.flower.canvasBitmapData.dispose();
+           stage.removeChild(object.flower);
+           object.flower = null
          }
          object.groundSprite = null
        }
@@ -341,6 +375,11 @@ package{
           object.sprite.canvasBitmapData.dispose()
           stage.removeChild(object.sprite)
           object.sprite = null
+        }
+        if(object.flower != null){
+          object.flower.canvasBitmapData.dispose();
+          stage.removeChild(object.flower);
+          object.flower = null
         }
         object.groundSprite = null
       }
@@ -378,6 +417,11 @@ package{
           stage.removeChild(object.sprite);
           object.sprite = null
         }
+        if(object.flower != null){
+          object.flower.canvasBitmapData.dispose();
+          stage.removeChild(object.flower);
+          object.flower = null
+        }
         object.groundSprite = null
         buffer[y].pop();
       }
@@ -405,6 +449,11 @@ package{
           object.sprite.canvasBitmapData.dispose();
           stage.removeChild(object.sprite);
           object.sprite = null
+        }
+        if(object.flower != null){
+          object.flower.canvasBitmapData.dispose();
+          stage.removeChild(object.flower);
+          object.flower = null
         }
         object.groundSprite = null
         buffer[y].shift();
@@ -438,14 +487,15 @@ package{
       if((localItem(x,y, stage) == null || localItem(x,y, stage).walkable) && !derail){
         if(follow){
           if (x + cumulative_x > player.x){
-            player.sprite.drawTile(492);
+            player.drawTile(492);
           } else if (x + cumulative_x < player.x){
-            player.sprite.drawTile(494);
+            player.drawTile(494);
           } else if (y + cumulative_y < player.y){
-            player.sprite.drawTile(495);
+            player.drawTile(495);
           } else {
-            player.sprite.drawTile(493);
+            player.drawTile(493);
           }
+          player.darken(stage.shadeFromBase())
           if ((y + cumulative_y) < player.y){
             cumulative_y += 1
             moveCameraUp(stage, false);
@@ -465,20 +515,29 @@ package{
         } else if(!stage.moving){
           var node:Node = buffer[y][x]
           if(node.isWalkable()){
+            var moved:Boolean = false
             if (x > player.x){
-              player.sprite.drawTile(492);
+              player.drawTile(492);
               moveCameraRight(stage, false);
+              moved = true
             } else if (x < player.x){
-              player.sprite.drawTile(494);
+              player.drawTile(494);
               moveCameraLeft(stage, false);
+              moved = true
             } 
             if (y < player.y){
-              player.sprite.drawTile(495);
+              player.drawTile(495);
               moveCameraUp(stage, false);
+              moved = true
             } else if (y > player.y) {
-              player.sprite.drawTile(493);
+              player.drawTile(493);
               moveCameraDown(stage, false);
+              moved = true
             }
+            if(moved){
+              player.darken(stage.shadeFromBase())
+            }
+            
             stage.addChild(player.sprite);
           }
           //player.x = x;

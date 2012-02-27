@@ -1,9 +1,9 @@
 package{
-  public class DeadGoat extends Item{
+  public class DeadSheGoat extends Item{
     
-    public function DeadGoat(related_node:Node) {
+    public function DeadSheGoat(related_node:Node) {
       super(related_node)
-      tile = 217;
+      tile = 218;
       sheetClass = charSheetClass
       emptyTile = 461
 		  scaleX = 4

@@ -7,13 +7,15 @@ package{
     } 
     
     override public function take(stage:Object, world:World):Item{
-      stage.updateEnergy(100)
+      stage.replenishEnergy()
+      stage.darken()
       //world.player.addToInventory(this, stage)
       return new Bed(node);
     }
     
     override public function useItem(stage:Object, used:Item):Boolean{
       stage.replenishEnergy()
+      stage.darken()
       return false
     }
   }

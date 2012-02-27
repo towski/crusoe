@@ -4,7 +4,7 @@ package{
     
     public function Chest(related_node:Node) {
       super(related_node)
-      itemSheet = new piratesSheetClass()
+      sheetClass = piratesSheetClass
       var random:int = Math.floor(Math.random() * 2);
       tile = 22
       emptyTile = 26

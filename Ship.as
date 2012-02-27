@@ -3,7 +3,7 @@ package{
     public function Ship(related_node:Node) {
       super(related_node, true)
       tile = 9;
-      itemSheet = new piratesSheetClass()
+      sheetClass = piratesSheetClass
       emptyTile = 26
       equipable = true
       takeable = true

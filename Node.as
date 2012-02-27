@@ -17,6 +17,7 @@ package{
     [Embed(source='previewenv.png')]
 		public var sheetClass:Class;
 		public var sheet:Bitmap = new sheetClass();
+		public var flower:SpriteSheet;
 		
     public var parent:Object;
     public var child:Object;
@@ -31,10 +32,12 @@ package{
     public var itemTile:int;
     
     public var delay:int;
+    public var stage:Object
     
     public var item:Item;
     public var world:World;
-    public function Node(obj_x:int, obj_y:int, stage:Object, world:World, my_color:int = 70){ 
+    public function Node(obj_x:int, obj_y:int, myStage:Object, world:World, my_color:int = 70){ 
+      stage = myStage
       world = world;
       walkable = true;
       takeable = true;
@@ -66,9 +69,16 @@ package{
       if(sprite != null){
 	      sprite.canvasBitmapData.colorTransform( new Rectangle(0, 0, 32, 32), new ColorTransform(shade, shade, shade));
       }
+      darkenFlower(shade)
     }
     
-    public function drawItem(stage:Object):void{
+    public function darkenFlower(shade:Number):void {
+      if(flower != null){
+        flower.canvasBitmapData.colorTransform( new Rectangle(0, 0, 32, 32), new ColorTransform(shade, shade, shade));
+      }
+    }
+    
+    public function drawItem():void{
       if(item != null){
         if(sprite != null && stage.contains(sprite)){
           stage.removeChild(sprite)
@@ -92,26 +102,30 @@ package{
         sprite.x = 32 * x;
         sprite.y = 32 * y;
       }
+      if(flower != null){
+        flower.x = 32 * x;
+        flower.y = 32 * y;
+      }
       groundSprite.x = 32 * x;
 			groundSprite.y = 32 * y;
     }
     
-    public function requirements_met(stage:Object):Boolean{
+    public function requirements_met(sstage:Object):Boolean{
       return true;
     }
     
-    public function addItem(object:Item, stage:Object):void{
+    public function addItem(object:Item, sstage:Object):void{
       //object.place(stage, x, y)
       if(object != null){
         stage.world.items[y + stage.world_index_y][x + stage.world_index_x] = flash.utils.getDefinitionByName(flash.utils.getQualifiedClassName(object));
         item = object
-        drawItem(stage)
+        drawItem()
       } else {
         stage.world.items[y + stage.world_index_y][x + stage.world_index_x] = null
       }
     }
     
-    public function place(stage:Object):void{
+    public function place(sstage:Object):void{
       if(item != null){
         item.place(stage, x, y)
       }
@@ -120,7 +134,7 @@ package{
       //world.buffer[y][x] = this;
     }
     
-    public function forceUseItem(stage:Object):void{
+    public function forceUseItem(sstage:Object):void{
       if(item.useItem(stage, item)){
         stage.world.items[y + stage.world_index_y][x + stage.world_index_x] = null
         sprite.drawTile(item.emptyTile)
@@ -128,13 +142,13 @@ package{
       }
     }
     
-    public function useItem(stage:Object):void{
+    public function useItem(sstage:Object):void{
       if(item != null && item.useable){
         forceUseItem(stage)
       }
     }
     
-    public function removeItem(stage:Object):void{
+    public function removeItem(sstage:Object):void{
       if(item != null){
         stage.world.items[y + stage.world_index_y][x + stage.world_index_x] = null
         sprite.drawTile(item.emptyTile)
@@ -146,15 +160,20 @@ package{
       return walkable && (item == null || item.walkable)
     }
     
-    public function afterTake(stage:Object, world:World):void{
+    public function afterTake(sstage:Object, world:World):void{
       var emptyTile:int = item.emptyTile;
       item = item.take(stage, world)
-      if(item != null){
-        sprite.drawTile(item.tile)
-      } else {
+      if(item == null){
         world.clearLocalItem(x, y, stage)
         sprite.drawTile(emptyTile)
+      } else {
+        sprite.drawTile(item.tile)
       }
+    }
+    
+    public function hit():void{
+      sprite.canvasBitmapData.colorTransform(new Rectangle(0, 0, 32, 32), new ColorTransform(1, 0, 0)); 
+      setTimeout(drawItem, 500)
     }
     
     public function setColor():void{

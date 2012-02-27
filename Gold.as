@@ -3,7 +3,7 @@ package{
     public function Gold(related_node:Node) {
       super(related_node, true)
       tile = 23;
-      itemSheet = new itemSheetClass()
+      sheetClass = itemSheetClass
       takeable = true
       //emptyTile = 1
     } 

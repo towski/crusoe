@@ -6,6 +6,7 @@ package{
   import flash.utils.getDefinitionByName
   import flash.geom.ColorTransform;
   import flash.geom.Rectangle;
+  import flash.utils.*;
   
   public class Player{ 
 		[Embed(source='char.png')]
@@ -18,6 +19,7 @@ package{
 		
     public var x:int;
     public var y:int;
+    public var tile:int;
     
     public var inventory:Item;
     public var inventoryClass:Object;
@@ -26,12 +28,17 @@ package{
     
     public var hand:String;
     
+    public var swordSkill:int = 0
+    
     public var inventoryHighlight:Sprite;
-    public function Player(obj_x:int, obj_y:int, stage:Object) {
+    public var stage:Object;
+    public function Player(obj_x:int, obj_y:int, myStage:Object) {
       x = obj_x;
       y = obj_y;
 			hand = "left"
-      drawSprite(stage);
+      stage = myStage
+      tile = 493
+      drawSprite();
       inventoryHighlight = new Sprite()
       inventoryHighlight.graphics.beginFill(0xaaaaaa);
       inventoryHighlight.graphics.drawRect(0, 0, 64, 64);
@@ -44,6 +51,11 @@ package{
     
     public function darken(shade:Number):void {
       sprite.canvasBitmapData.colorTransform(new Rectangle(0, 0, 32, 32), new ColorTransform(shade, shade, shade));
+    }
+    
+    public function hit():void {
+      sprite.canvasBitmapData.colorTransform(new Rectangle(0, 0, 32, 32), new ColorTransform(1, 0, 0)); 
+      setTimeout(drawSprite, 500)
     }
     
     public function drawInventory(stage:Object):void{
@@ -63,9 +75,8 @@ package{
     }
     
     public function useItem(node:Node, stage:Object):void{
-      var inventoryName:String = flash.utils.getQualifiedClassName(inventory);
-      var equipmentName:String = flash.utils.getQualifiedClassName(equipment);
-      trace("useItem:" + hand)
+/*      var inventoryName:String = flash.utils.getQualifiedClassName(inventory);
+      var equipmentName:String = flash.utils.getQualifiedClassName(equipment);*/
       if(hand == "left" && inventory != null){
         inventory.useItem(stage, node == null ? null : node.item)
       } else if(equipment != null) {
@@ -125,23 +136,8 @@ package{
         }
         node.place(stage)
       } else {
-        trace("nest")
         var inventoryName:String = handItemName()
         var nodeItemName:String = flash.utils.getQualifiedClassName(node.item)
-        if (nodeItemName == "Barrel"){
-          if (inventoryName == "Grapes" || inventoryName == "Mushroom" || inventoryName == "Meat"){
-            stage.food += 1
-            stage.barrel.push(clearInventory(stage))
-            stage.food_text.text = "food:" + stage.food;
-          }
-        }
-        if (nodeItemName == "Table"){
-          if (inventoryName == "Log"){
-            stage.wood += 1
-            clearInventory(stage)
-            stage.wood_text.text = "wood:" + stage.wood;
-          }
-        }
         if (nodeItemName == "Chest"){
           if (inventoryName == "Axe"){
             //storage["1,2"] = ''
@@ -245,14 +241,22 @@ package{
       return equipment != null;
     }
     
-    public function drawSprite(stage:Object):void{
-      sprite = new SpriteSheet(sheet, 8, 8);
+    public function drawTile(newTile:int):void{
+      sprite.drawTile(newTile)
+      tile = newTile
+    }
+    
+    public function drawSprite():void{
+      if(sprite != null && stage.contains(sprite)){
+        stage.removeChild(sprite)
+      }
+      sprite = new SpriteSheet(new sheetClass(), 8, 8);
       sprite.scaleX = 4;
       sprite.scaleY = 4;
 			sprite.x = 32 * x;
 			sprite.y = 32 * y;
+			sprite.drawTile(tile);
 			stage.addChild(sprite);
-			sprite.drawTile(493);
     }
   }
 }

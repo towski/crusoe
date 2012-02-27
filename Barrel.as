@@ -3,7 +3,7 @@ package{
     public function Barrel(related_node:Node) {
       super(related_node, true)
       tile = 0;
-      itemSheet = new itemSheetClass()
+      sheetClass = itemSheetClass
       useable = true
       takeable = true
       wood = 2
@@ -11,15 +11,15 @@ package{
     
     override public function take(stage:Object, world:World):Item{
       super.take(stage, world);
-      world.player.addToInventory(this, stage)
-      return null
-    }
-    
-    override public function useItem(stage:Object, used:Item):Boolean{
-      if(stage.barrel.length > 0 && !stage.world.player.hasInventory()){
-        stage.world.player.addToInventory(stage.barrel.pop(), stage)
+      if(stage.barrel.length == 0){
+        world.player.addToInventory(this, stage)
+        return null
+      } else {
+        if(stage.barrel.length > 0 && !stage.world.player.handFull()){
+          stage.world.player.addToInventory(stage.barrel.pop(), stage)
+        }
+        return new Barrel(node)
       }
-      return false
     }
   }
 }

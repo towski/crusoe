@@ -1,14 +1,11 @@
 package{
-  public class DeadGoat extends Item{
+  public class DeadFowl extends Item{
     
-    public function DeadGoat(related_node:Node) {
+    public function DeadFowl(related_node:Node) {
       super(related_node)
-      tile = 217;
-      sheetClass = charSheetClass
-      emptyTile = 461
-		  scaleX = 4
-		  scaleY = 4
-		  bits = 8
+      tile = 13;
+      sheetClass = piratesSheetClass
+      emptyTile = 26
 		  useable = true
 		  takeable = false
 		  rotation = 45

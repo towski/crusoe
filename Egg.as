@@ -1,16 +1,18 @@
 package{
-  public class Grapes extends Item{
-    
-    public function Grapes(related_node:Node) {
+  public class Egg extends Item{
+    public function Egg(related_node:Node) {
       super(related_node)
-      tile = 127
-      useable = true
+      sheetClass = piratesSheetClass
+      tile = 17
+      emptyTile = 26
       takeable = true
-    }
+      //items = node.store(stage)
+    } 
     
     override public function take(stage:Object, world:World):Item{
+      super.take(stage, world);
       world.player.addToInventory(this, stage)
-      return null;
+      return null
     }
     
     override public function useItem(stage:Object, used:Item):Boolean{
