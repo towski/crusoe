@@ -2,6 +2,7 @@ package{
   import flash.utils.*;
   
   public class Goat extends Item{
+    public static var isAnimal:Boolean = true
     public function Goat(related_node:Node) {
       super(related_node, true)
       tile = 217;

@@ -2,6 +2,8 @@ package{
   import flash.utils.*;
   
   public class Kid extends Item{
+    public static var isAnimal:Boolean = true
+    
     public function Kid(related_node:Node) {
       super(related_node, true)
       tile = 218;
@@ -15,13 +17,14 @@ package{
     }
     
     override public function take(stage:Object, world:World):Item{
-      stage.world.player.addToInventory(this, stage)
       removeAnimal(stage)
+      stage.world.player.addToInventory(this, stage)
       return null;
     }
     
     override public function place(stage:Object, x:int, y:int):void{
-      stage.world.animals.push(new Animal(Kid, stage.world_index_x + node.x, stage.world_index_y + node.y, null))
+      var newAnimal:Animal = new Animal(Kid, stage.world_index_x + node.x, stage.world_index_y + node.y, node)
+      stage.world.animals.push(newAnimal)
     }
     
     override public function move(stage:Object):void{

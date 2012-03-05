@@ -1,11 +1,11 @@
 package{
-  public class Tree extends Item{
+  public class BabyTree extends Item{
     
-    public function Tree(related_node:Node) {
+    public function BabyTree(related_node:Node) {
       super(related_node)
-      tile = 73
+      tile = 79
       delay = 4500
-      useable = false
+      useable = true
       takeable = false
     }
     

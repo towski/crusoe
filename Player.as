@@ -58,6 +58,11 @@ package{
       setTimeout(drawSprite, 500)
     }
     
+    public function miss():void {
+      sprite.canvasBitmapData.colorTransform(new Rectangle(0, 0, 32, 32), new ColorTransform(0, 1, 0)); 
+      setTimeout(drawSprite, 500)
+    }
+    
     public function drawInventory(stage:Object):void{
       inventorySlot = inventory.getSprite();
 			inventorySlot.x = 32 * 16.5;
@@ -75,37 +80,11 @@ package{
     }
     
     public function useItem(node:Node, stage:Object):void{
-/*      var inventoryName:String = flash.utils.getQualifiedClassName(inventory);
-      var equipmentName:String = flash.utils.getQualifiedClassName(equipment);*/
       if(hand == "left" && inventory != null){
         inventory.useItem(stage, node == null ? null : node.item)
       } else if(equipment != null) {
         equipment.useItem(stage, node == null ? null : node.item)
       }
-      //var itemName:String = null;
-      //if(node != null){
-      //  itemName = flash.utils.getQualifiedClassName(node.item);
-      //  trace(itemName)
-      //}
-      //if (equipmentName == "Sword"){
-      //  if (itemName == "Goat"){
-      //    node.forceUseItem(stage);
-      //  }
-      //} 
-      //if(itemName != "null" && itemName != null) {
-      //  trace(node.item)
-      //  if(node.item.useable){
-      //    node.item.useItem(stage);
-      //  } else if(node.item.equipable) {
-      //    addToEquipment(node.item, stage)
-      //    node.removeItem(stage)
-      //  }
-      //} else {
-      //  if(inventory != null && inventory.useable){
-      //    inventory.useItem(stage)
-      //  }
-      //  //node.useItem(stage, stage.world);
-      //}
     }
     
     public function take(node:Node, stage:Object):void{
@@ -140,16 +119,15 @@ package{
             node.place(stage)
           }
         }
-      } else {
-        var inventoryName:String = handItemName()
-        var nodeItemName:String = flash.utils.getQualifiedClassName(node.item)
-        if (nodeItemName == "Chest"){
-          if (inventoryName == "Axe"){
-            //storage["1,2"] = ''
-            //stage.storeItem(node, clearInventory(stage))
-            stage.wood_text.text = "wood:" + stage.wood;
-          }
-        }
+      }
+    }
+    
+    public function createInventory():void{
+      if(inventoryClass != null){
+        inventory = new inventoryClass(null)
+      }
+      if(equipmentClass != null){
+        equipment = new equipmentClass(null)
       }
     }
     

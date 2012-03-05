@@ -1,8 +1,7 @@
 package{
   import flash.utils.*;
   import flash.events.Event;
-  import flash.net.URLLoader;
-  import flash.net.URLRequest;
+  import flash.net.SharedObject
 	
   public class World {
     public var world:Array;
@@ -10,6 +9,8 @@ package{
     public var animals:Array;
     public var items:Array;
     public var terrain:Array;
+    public var markers:Array
+    public var shipMarkers:Array
     public var player:Player;
     public var breakGround:Boolean;
     public var derail:Boolean = false;
@@ -19,6 +20,8 @@ package{
     public var interval:Number;
     public var finishInterval:int;
     public var stage:Object;
+    public var saveData:Array
+    
     public function World(myStage:Object) {
       breakGround = true;
       world = new Array()
@@ -27,22 +30,83 @@ package{
       animals = new Array();
       cumulative_x = 0;
       cumulative_y = 0;
+      markers = new Array()
+      shipMarkers = new Array()
       stage = myStage
     }
-    
-    public function setup(stage:Object):void {
-      var mapObject:Map = new Map();
-      map = mapObject.toString().split(/\n/);
+
+    public function save(island:Object, sharedObject:SharedObject):void{
+      saveData = new Array()
+      for(var y:int=0; y < items.length; y++){ 
+        saveData.push(new Array());
+        for(var x:int = 0; x < items[y].length; x++){
+          if(items[y][x] != null){
+            saveData[y].push(flash.utils.getQualifiedClassName(items[y][x]))
+          } else {
+            saveData[y].push(null)
+          }
+        }
+      }
+      sharedObject.setProperty('saveData', saveData)
+      sharedObject.setProperty('world_index_x'  , island.world_index_x)
+      sharedObject.setProperty('world_index_y'  , island.world_index_y)
+      sharedObject.setProperty('moving'         , island.moving)
+      sharedObject.setProperty('mode'           , island.mode)
+      sharedObject.setProperty('daytime'        , island.daytime)
+      sharedObject.setProperty('interval'       , island.interval)
+      sharedObject.setProperty('energy'         , island.energy)
+      sharedObject.setProperty('maxEnergy'      , island.maxEnergy)
+      sharedObject.setProperty('maxHealth'      , island.maxHealth)
+      sharedObject.setProperty('maxHunger'      , island.maxHunger)
+      sharedObject.setProperty('hunger'         , island.hunger)
+      sharedObject.setProperty('health'         , island.health)
+      sharedObject.setProperty('food'           , island.food)
+      sharedObject.setProperty('wood'           , island.wood)
+      sharedObject.setProperty('day'            , island.day)
+      sharedObject.setProperty('barrel'         , island.barrel)
+      sharedObject.setProperty('chest'          , island.chest)
+      sharedObject.setProperty('achievements'   , stage.achievements.achievements)
+      sharedObject.setProperty('choppedTrees'   , stage.choppedTrees)
+      sharedObject.setProperty('goatsKilled'    , stage.goatsKilled)
+      sharedObject.setProperty('fowlsKilled'    , stage.fowlsKilled)
+      sharedObject.setProperty('cannibalsKilled', stage.cannibalsKilled)
       
+      if(player.inventoryClass != null){
+        sharedObject.setProperty('playerInventory'           , flash.utils.getQualifiedClassName(player.inventoryClass))
+      }
+      if(player.equipmentClass != null){
+        sharedObject.setProperty('playerEquipment'           , flash.utils.getQualifiedClassName(player.equipmentClass))      
+      }
+    }
+    
+    public function load(sharedObject:SharedObject):void{
+      items = new Array()
+      for(var y:int=0; y < sharedObject.data.saveData.length; y++){ 
+        items.push(new Array())
+        for(var x:int = 0; x < sharedObject.data.saveData[y].length; x++){
+          if(sharedObject.data.saveData[y][x] != null){
+            items[y].push(flash.utils.getDefinitionByName(sharedObject.data.saveData[y][x]))
+          } else {
+            items[y].push(null)
+          }
+          if(items[y][x] != null && items[y][x].isAnimal){
+            animals.push(new Animal(items[y][x], x, y, null))          
+          }
+        }
+      }
+    }
+    
+    public function setup(stage:Object, sharedObject:SharedObject):void {
+      var mapObject:Map = new Map();
+      map = mapObject.toString().split(/\n/)
       var klass:Class;
       var char:String;
+      var random:int;
       for(var y:int=0; y < map.length; y++){ 
         world.push(new Array());
-        items.push(new Array());
         for(var x:int = 0; x < map[0].length; x++){
           char = map[y].charAt(x);
           if(char == 'u'){
-            var random:int = Math.floor(Math.random() * 101);
             klass = Water;
           } else if (char == '.'){
             klass = Sand;
@@ -55,87 +119,39 @@ package{
           } else if (char == '_'){
             klass = Mud;
           } else if (char == 'f'){
-            klass = ForestGround;
-            random = Math.floor(Math.random() * 201);
-            if(random < 1){
-              items[y][x] = Mushroom
-            } else if(random < 3){
-              items[y][x] = Rock
-            } else if(random < 32){
-              items[y][x] = Tree
-            } else if(random < 90){
-              items[y][x] = Bush
-            }
+            klass = ForestGround
           } else if (char == 'T'){
-            klass = Mud;
-            items[y][x] = Sword
-          } else if (char == 'a'){
-            klass = Mud;
-            items[y][x] = Axe
-          } else if (char == 't'){
-            klass = Ground;
-            items[y][x] = Table
-          } else if (char == 'o'){
-            klass = Sand;
-            items[y][x] = Gold
-          } else if (char == 'd'){
-            klass = Sand;
-            items[y][x] = Skull
-          } else if (char == 'D'){
-            klass = Mud;
-            items[y][x] = Bed
-          } else if (char == 'B'){
-            klass = Sand;
-            items[y][x] = Barrel
-          } else if (char == 'r'){
-            klass = Sand;
-            items[y][x] = Rum
-          } else if (char == 'X'){
-            klass = Ground;
-            stage.world_index_y = y
-            stage.world_index_x = x
-          } else if (char == 'G'){
-            items[y][x] = Goat
-            animals.push(new Animal(Goat, x, y, null))
+            klass = Mud
           } else if (char == 'C'){
-            klass = Mud;
-            items[y][x] = Cannibal
-            animals.push(new Animal(Cannibal, x, y, null))
-          } else if (char == 'S'){
-            items[y][x] = SheGoat
-            animals.push(new Animal(SheGoat, x, y, null))
-          } else if (char == 'M'){
-            items[y][x] = Monkey
-            animals.push(new Animal(Monkey, x, y, null))
-          } else if (char == 'F'){
-            items[y][x] = Fowl
-            animals.push(new Animal(Fowl, x, y, null))
-          } else if (char == 's'){
-            items[y][x] = SheKid
-            animals.push(new Animal(SheKid, x, y, null))          
-          } else {
-            random = Math.floor(Math.random() * 201);
+            klass = Mud
+          } else if (char == 'a'){
+            klass = Mud
+          } else if (char == 't'){
             klass = Ground
-            random = Math.floor(Math.random() * 201);
-            if(random < 1){
-              items[y][x] = Mushroom
-            } else if(random < 3){
-              items[y][x] = Rock
-            } else if(random < 4) {
-              klass = RedFlowerGround
-            } else if(random < 5) {
-              klass = WhiteFlowerGround
-            } else if(random < 32){
-              items[y][x] = Tree
-            } else if(random < 34){
-              items[y][x] = GoldTree
-            } else if(random < 90){
-              items[y][x] = Bush
-            }
+          } else if (char == 'o'){
+            klass = Sand
+          } else if (char == 'd'){
+            klass = Sand
+          } else if (char == 'D'){
+            klass = Mud
+          } else if (char == 'B'){
+            klass = Sand
+          } else if (char == 'r'){
+            klass = Sand
+          } else if (char == 'X'){
+            klass = Ground
+          } else {
+            klass = Ground
           }
           world[y].push(klass);
         }
       }
+      if(sharedObject != null && sharedObject.data.saveData != null){
+        load(sharedObject)
+      } else {
+        newItems()
+      }
+      map = null
       
       items[stage.world_index_y + 10][stage.world_index_x + 10] = null
       
@@ -154,6 +170,94 @@ package{
       interval = setInterval(move, 1000, items, stage)
     }
     
+    public function newItems():void{
+      var char:String;
+      var random:int;
+      for(var y:int=0; y < map.length; y++){ 
+        items.push(new Array());
+        for(var x:int = 0; x < map[0].length; x++){
+          char = map[y].charAt(x);
+          if (char == 'f'){
+            random = Math.floor(Math.random() * 201);
+            if(random < 1){
+              items[y][x] = Mushroom
+            } else if(random < 3){
+              items[y][x] = Rock
+            } else if(random < 32){
+              items[y][x] = ForestTree
+            } else if(random < 90){
+              items[y][x] = Bush
+            }
+          } else if (char == 'T'){
+            items[y][x] = Sword
+          } else if (char == 'a'){
+            items[y][x] = Axe
+          } else if (char == 't'){
+            items[y][x] = Table
+          } else if (char == 'o'){
+            items[y][x] = Gold
+          } else if (char == 'd'){
+            items[y][x] = Skull
+          } else if (char == 'D'){
+            items[y][x] = Bed
+          } else if (char == 'B'){
+            items[y][x] = Barrel
+          } else if (char == 'r'){
+            items[y][x] = Rum
+          } else if (char == 'X'){
+            stage.world_index_y = y
+            stage.world_index_x = x
+          } else if (char == 'G'){
+            items[y][x] = Goat
+            animals.push(new Animal(Goat, x, y, null))
+          } else if (char == 'C'){
+            items[y][x] = Cannibal
+            animals.push(new Animal(Cannibal, x, y, null))
+          } else if (char == 'S'){
+            items[y][x] = SheGoat
+            animals.push(new Animal(SheGoat, x, y, null))
+          } else if (char == 'M'){
+            items[y][x] = Monkey
+            animals.push(new Animal(Monkey, x, y, null))
+          } else if (char == 'I'){
+            shipMarkers.push(new ShipMarker(x, y))
+          } else if (char == 'F'){
+            random = Math.floor(Math.random() * 2);
+            if(random < 1){
+              items[y][x] = Fowl
+              animals.push(new Animal(Fowl, x, y, null))
+            } else {
+              items[y][x] = BlueFowl
+              animals.push(new Animal(BlueFowl, x, y, null))
+            }
+          } else if (char == 's'){
+            items[y][x] = Kid
+            animals.push(new Animal(Kid, x, y, null))          
+          } else if (char == ' ') {
+            random = Math.floor(Math.random() * 201);
+            if(random < 1){
+              items[y][x] = Mushroom
+            } else if(random < 3){
+              items[y][x] = Rock
+            } else if(random < 4) {
+              world[y][x] = RedFlowerGround
+            } else if(random < 5) {
+              world[y][x] = WhiteFlowerGround
+            } else if(random < 25){
+              items[y][x] = Tree
+            } else if(random < 32){
+              items[y][x] = BabyTree
+              markers.push(new BabyTreeMarker(x, y))
+            } else if(random < 34){
+              items[y][x] = GoldTree
+            } else if(random < 90){
+              items[y][x] = Bush
+            }
+          }
+        }
+      }
+    }
+    
     public function playerNeighbor(animal:Animal):Boolean {
       var distance:Number = Math.sqrt((Math.pow(animal.y - (stage.world_index_y + 10), 2) + Math.pow(animal.x - (stage.world_index_x + 10), 2)))
       return distance <= Math.sqrt(2)
@@ -168,10 +272,14 @@ package{
     }
     
     public function move(items:Array, stage:Object):void{
+      for(var i:int = 0; i < markers.length; i++){
+        markers[i].grow(stage)
+      }
+      
       for(var i:int = 0; i < animals.length; i++){
         var animal:Animal = animals[i];
         var backtrace:String;
-        var random:int = Math.floor(Math.random() * animal.moveChances());
+        random = Math.floor(Math.random() * animal.moveChances());
         if(random < 1){
           var newY:int
           var newX:int
@@ -208,6 +316,8 @@ package{
                 if(random < 50 + animal.animal.attackSkill){
                   player.hit()
                   stage.updateHealth(-0.5)
+                } else {
+                  player.miss()
                 }
                 if(player.handItemName() == "Sword"){
                   player.useItem(animal.animal.node, stage)
@@ -226,9 +336,6 @@ package{
             }
           } catch(e:Error){
             //trace(e)
-            trace(animal.animal)
-            trace(backtrace)
-            throw(e)
           }
           animal.move(stage)
         }
@@ -318,8 +425,6 @@ package{
     public function finishMoving(stage:Object):void{
       if(!stage.moving){
         player.sprite.drawTile(493);
-        cumulative_x = 0;
-        cumulative_y = 0;
         player.darken(stage.shadeFromBase())
       }
       finishInterval = 0
@@ -482,13 +587,7 @@ package{
       return items[stage.world_index_y + y + cumulative_y][stage.world_index_x + x + cumulative_x]
     }
     
-    public function movePerson(x:int, y:int, setMoving:Boolean, stage:Object, follow:Boolean = true):void{
-      if (!setMoving){
-        if(finishInterval != 0){
-          clearInterval(finishInterval)
-        }
-        finishInterval = setTimeout(finishMoving, 500, stage)
-      }
+    public function movePerson(x:int, y:int, setMoving:Boolean, stage:Object, follow:Boolean, target:Object = null, nearTarget:Object = null, closure:Function = null, closureParam:Object = null):void{
       if((localItem(x,y, stage) == null || localItem(x,y, stage).walkable) && !derail){
         if(follow){
           if (x + cumulative_x > player.x){
@@ -554,6 +653,30 @@ package{
         derail = true
         stage.moving = false
 			}
+			if (!setMoving){
+        if(finishInterval != 0){
+          clearInterval(finishInterval)
+        }
+        if (closure != null){
+          setTimeout(closure, buffer[target.y][target.x].delay(), closureParam)
+        }
+        cumulative_x = 0;
+        cumulative_y = 0;
+        if (target != null){
+          finishInterval = setTimeout(finishMoving, buffer[target.y][target.x].delay(), stage)
+        } else {
+          finishInterval = setTimeout(finishMoving, 250, stage)
+        }
+        buffer[player.y][player.x].clearHighlight()
+        buffer[y][x].clearHighlight()
+        if(target != null){
+          buffer[target.y][target.x].clearHighlight()
+        }
+        if(nearTarget != null){
+          buffer[nearTarget.y][nearTarget.x].clearHighlight()
+        }
+      }
+      stage.showCurrentAchievement()
 			if(!setMoving){
         derail = false
       }

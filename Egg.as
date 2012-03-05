@@ -17,7 +17,6 @@ package{
     
     override public function useItem(stage:Object, used:Item):Boolean{
       stage.updateHunger(0.5);
-      stage.updateHealth(0.5);
       if(node == null){
         stage.world.player.clearInventory(stage)
       } else {

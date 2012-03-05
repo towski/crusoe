@@ -4,7 +4,7 @@ package{
       super(related_node, true)
       tile = 11;
       sheetClass = piratesSheetClass
-      emptyTile = 24
+      emptyTile = 26
     } 
     
     override public function take(stage:Object, world:World):Item{

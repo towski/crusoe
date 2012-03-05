@@ -1,12 +1,10 @@
 package{
   import flash.utils.*;
   
-  public class Cannibal extends Item{
-    public static var isAnimal:Boolean = true
-    
-    public function Cannibal(related_node:Node) {
+  public class Pirate extends Item{
+    public function Pirate(related_node:Node) {
       super(related_node, true)
-      tile = 36;
+      tile = 2;
       sheetClass = piratesSheetClass
       emptyTile = 26
 		  useable = true

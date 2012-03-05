@@ -1,4 +1,5 @@
 package{
+  import flash.utils.getDefinitionByName
   public class Barrel extends Item{
     public function Barrel(related_node:Node) {
       super(related_node, true)
@@ -16,7 +17,8 @@ package{
         return null
       } else {
         if(stage.barrel.length > 0 && !stage.world.player.handFull()){
-          stage.world.player.addToInventory(stage.barrel.pop(), stage)
+          var klass:Object = flash.utils.getDefinitionByName(stage.barrel.pop())
+          stage.world.player.addToInventory(new klass(null), stage)
         }
         return new Barrel(node)
       }

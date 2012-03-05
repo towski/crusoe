@@ -2,6 +2,8 @@ package{
   import flash.utils.*;
   
   public class Monkey extends Item{
+    public static var isAnimal:Boolean = true
+    
     public function Monkey(related_node:Node) {
       super(related_node, true)
       tile = 215;

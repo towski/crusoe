@@ -2,6 +2,8 @@ package{
   import flash.utils.*;
   
   public class SheKid extends Item{
+    public static var isAnimal:Boolean = true
+    
     public function SheKid(related_node:Node) {
       super(related_node, true)
       tile = 218;

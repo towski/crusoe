@@ -14,6 +14,9 @@ package{
       x = world_x;
       y = world_y;
       animal = newAnimal(node)
+      if(node != null){
+        node.item = animal
+      }
     }
     
     public function newAnimal(node:Node):Item{

@@ -4,6 +4,7 @@ package{
   
   public class Item{
     static public var walkable:Boolean = false;
+    static public var isAnimal:Boolean = false;
     
     [Embed(source='previewenv.png')]
   	public var environmentSheetClass:Class;
@@ -41,6 +42,7 @@ package{
     public var energyCost:int;
     public var seconds:int;
     public var health:int;
+    public var energy:Number
     
     public var animal:Animal;
     public var scaleX:int;
@@ -77,6 +79,9 @@ package{
     }
     
     public function removeAnimal(stage:Object):void{
+      if(animal == null){
+        return
+      }
       var index:int = 0;
       for(var i:int; i < stage.world.animals.length; i++){
         if (stage.world.animals[i].y == (animal.y) && stage.world.animals[i].x == (animal.x)){
@@ -84,6 +89,7 @@ package{
           break;
         }
       }
+      trace(index)
       stage.world.animals.splice(index, 1)
       if(node != null){
         node.removeItem(stage)
@@ -104,6 +110,12 @@ package{
     public function hit():void{
       if(node != null){
         node.hit()
+      }
+    }
+    
+    public function miss():void{
+      if(node != null){
+        node.miss()
       }
     }
     

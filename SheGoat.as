@@ -2,6 +2,8 @@ package{
   import flash.utils.*;
   
   public class SheGoat extends Item{
+    public static var isAnimal:Boolean = true
+    
     public function SheGoat(related_node:Node) {
       super(related_node, true)
       tile = 218;
@@ -30,7 +32,7 @@ package{
     }
     
     override public function move(stage:Object):void{
-      var random:int = Math.floor(Math.random() * 600);
+      var random:int = Math.floor(Math.random() * 1000);
       if(random < 1){
         stage.world.animals.push(new Animal(SheKid, animal.x, animal.y, node))
       } else if(random < 2){

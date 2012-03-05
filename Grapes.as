@@ -1,27 +1,21 @@
 package{
-  public class Grapes extends Item{
+  public class Grapes extends Food{
     
     public function Grapes(related_node:Node) {
       super(related_node)
       tile = 127
       useable = true
       takeable = true
+      energy = 0.5
     }
     
     override public function take(stage:Object, world:World):Item{
-      world.player.addToInventory(this, stage)
+      super.take(stage, world)
       return null;
     }
     
     override public function useItem(stage:Object, used:Item):Boolean{
-      stage.updateHunger(0.5);
-      stage.updateHealth(0.5);
-      if(node == null){
-        stage.world.player.clearInventory(stage)
-      } else {
-        node.removeItem(stage)
-      }
-      return true;
+      return super.useItem(stage, used)
     }
   }
 }

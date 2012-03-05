@@ -1,4 +1,6 @@
 package{
+  import flash.utils.getDefinitionByName
+  1
   public class Chest extends Item{
     public var items:Array
     
@@ -14,8 +16,16 @@ package{
     
     override public function take(stage:Object, world:World):Item{
       super.take(stage, world);
-      world.player.addToInventory(this, stage)
-      return null
+      if(stage.chest.length == 0){
+        world.player.addToInventory(this, stage)
+        return null
+      } else {
+        if(stage.chest.length > 0 && !stage.world.player.handFull()){
+          var klass:Object = flash.utils.getDefinitionByName(stage.chest.pop())
+          stage.world.player.addToInventory(new klass(null), stage)
+        }
+        return new Chest(node)
+      }
     }
   }
 }

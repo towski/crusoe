@@ -31,8 +31,8 @@ package{
     public var groundTile:int;
     public var itemTile:int;
     
-    public var delay:int;
     public var stage:Object
+    private var highlight:Sprite;
     
     public var item:Item;
     public var world:World;
@@ -43,7 +43,6 @@ package{
       takeable = true;
       x = obj_x;
       y = obj_y;
-      delay = 500;
       groundTile = my_color;
       groundSprite = new SpriteSheet(sheet, 32, 32);
 			groundSprite.x = 32 * x;
@@ -95,6 +94,25 @@ package{
 		  }
     }
     
+    public function highlightTile():void{
+      highlight = new Sprite()
+      highlight.graphics.beginFill(0xaaaaaa);
+      highlight.graphics.drawRect(0, 0, 32, 32);
+      highlight.graphics.endFill();
+      highlight.alpha = 0.5;
+      stage.addChild(highlight)
+      highlight.x = 32 * x
+      highlight.y = 32 * y
+    }
+    
+    public function clearHighlight():void{
+      if(highlight != null){
+        if(stage.contains(highlight)){
+          stage.removeChild(highlight)
+        }
+      }
+    }
+    
     public function update(local_x:int, local_y:int):void{
       x = local_x;
       y = local_y;
@@ -108,6 +126,10 @@ package{
       }
       groundSprite.x = 32 * x;
 			groundSprite.y = 32 * y;
+			if(highlight != null){
+			  highlight.x = 32 * x;
+			  highlight.y = 32 * y;
+		  }
     }
     
     public function requirements_met(sstage:Object):Boolean{
@@ -142,7 +164,7 @@ package{
       }
     }
     
-    public function useItem(sstage:Object):void{
+    public function useItem():void{
       if(item != null && item.useable){
         forceUseItem(stage)
       }
@@ -171,8 +193,21 @@ package{
       }
     }
     
+    public function delay():int{
+      if(item != null) {
+        return item.delay
+      } else {
+        return 250
+      }
+    }
+    
     public function hit():void{
       sprite.canvasBitmapData.colorTransform(new Rectangle(0, 0, 32, 32), new ColorTransform(1, 0, 0)); 
+      setTimeout(drawItem, 500)
+    }
+    
+    public function miss():void{
+      sprite.canvasBitmapData.colorTransform(new Rectangle(0, 0, 32, 32), new ColorTransform(0, 1, 0)); 
       setTimeout(drawItem, 500)
     }
     
